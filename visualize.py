@@ -14,7 +14,7 @@ def add_frame(scene, rotation, translation, name, frame_scale=0.1):
         origin_radius=frame_scale / 5,
         axes_radius=frame_scale / 10,
         name=name,
-        wxyz=R.from_matrix(rotation).as_quat(),
+        wxyz=R.from_matrix(rotation).as_quat(scalar_first=True),
         position=translation,
     )
 
@@ -41,6 +41,8 @@ def visualize_geometry(
             )
             * 2
         )
+        from scipy.spatial.transform import Rotation as R
+
         for i, (image, (rotation, translation)) in enumerate(
             zip(images, camera_frustums)
         ):
@@ -51,7 +53,7 @@ def visualize_geometry(
                 scale=frames_scale,
                 line_width=0.5,
                 image=image,
-                wxyz=R.from_matrix(rotation).as_quat(),
+                wxyz=R.from_matrix(rotation).as_quat(scalar_first=True),
                 position=translation,
             )
     if frames is not None:
