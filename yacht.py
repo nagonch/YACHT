@@ -6,9 +6,7 @@ import cv2
 from typing import List, Tuple
 from numpy.typing import NDArray
 from dataclasses import dataclass
-from scipy.spatial.transform import Rotation as R
 from visualize import (
-    visualize_extrinsics_uncertainty,
     viusalize_target_to_cam_poses_2D,
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
