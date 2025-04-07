@@ -26,6 +26,8 @@ class CameraParameters:
 class HandEyeCalibrationResult:
     cam_to_arm_rotation: NDArray
     cam_to_arm_translation: NDArray
+    cam_to_base_rotation: NDArray
+    cam_to_base_translation: NDArray
     target_to_base_rotation: NDArray
     target_to_base_translation: NDArray
 
@@ -117,19 +119,19 @@ def get_eye_to_hand_transformation(
         camera_parameters.target_to_cam_translation,
     )
     cam_to_arm_translation = cam_to_arm_translation.reshape(-1)
+    cam_to_base_rotation = arm_to_base_rotation @ cam_to_arm_rotation
+    cam_to_base_translation = arm_to_base_translation + cam_to_arm_translation
     target_to_base_rotation = (
-        arm_to_base_rotation
-        @ cam_to_arm_rotation
-        @ camera_parameters.target_to_cam_rotation
+        cam_to_base_rotation @ camera_parameters.target_to_cam_rotation
     )
     target_to_base_translation = (
-        arm_to_base_translation
-        + cam_to_arm_translation
-        + camera_parameters.target_to_cam_translation
+        cam_to_base_translation + camera_parameters.target_to_cam_translation
     )
     result = HandEyeCalibrationResult(
         cam_to_arm_rotation,
         cam_to_arm_translation,
+        cam_to_base_rotation,
+        cam_to_base_translation,
         target_to_base_rotation,
         target_to_base_translation,
     )
