@@ -186,6 +186,7 @@ if __name__ == "__main__":
         viusalize_target_to_cam_poses_3D(images, camera_parameters)
         visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
     # TODO
+    # Figure out the coords problem
     # Figure out the viser frames problem
     # Remove shit code
     # Calculate hand-eye calibration error
