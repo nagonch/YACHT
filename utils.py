@@ -11,11 +11,4 @@ def normalize_points(points: Tuple[NDArray], rescale=1):
 
 
 if __name__ == "__main__":
-    N = 100
-    M = 50
-    K = 25
-    ar1 = np.random.uniform(size=(N, 3)) * 100
-    ar2 = np.random.uniform(size=(M, 3)) * 300
-    ar3 = np.random.uniform(size=(K, 3)) * 5e3
-    points = normalize_points((ar1, ar2, ar3))
-    print(points)
+    pass
