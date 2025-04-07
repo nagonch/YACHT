@@ -1,0 +1,8 @@
+venv/*
+calibration/*
+*.ipynb
+*.pyc
+*.csv
+*.npy
+*.png
+*.txt
