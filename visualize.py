@@ -136,7 +136,7 @@ def viusalize_target_to_cam_poses_3D(
 ):
     if normalize:
         camera_parameters.target_to_cam_translation = normalize_points(
-            camera_parameters.target_to_cam_translation, rescale=scene_scale
+            (camera_parameters.target_to_cam_translation,), rescale=scene_scale
         )[0]
 
     cam_to_target_rotation = np.transpose(

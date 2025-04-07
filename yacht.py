@@ -11,6 +11,7 @@ from visualize import (
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
 )
+from scipy.spatial.transform import Rotation as R
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
@@ -53,7 +54,8 @@ def detect_corners(
     corners3D[:, :2] = corners_2D * chessboard_size
     detected_images = []
     detected_corners = []
-    for image in images:
+    detected_inds = []
+    for i, image in enumerate(images):
         grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         is_detected, corners = cv2.findChessboardCorners(
             grayscale_image, chessboard_dims
@@ -70,9 +72,11 @@ def detect_corners(
                     0.001,
                 ),
             )[:, 0, :]
+            detected_inds.append(i)
             detected_images.append(image)
             detected_corners.append(corners)
     return (
+        detected_inds,
         detected_corners,
         corners3D,
         detected_images,
@@ -167,29 +171,38 @@ if __name__ == "__main__":
         for image_fname in image_filenames
     ]
     # Detecting corners
-    detected_corners, corners3D, detected_images = detect_corners(
+    detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
         chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
-    # Getting camera calibration parameters
+
+    # # Getting camera calibration parameters
     camera_parameters = get_camera_parameters(
         detected_corners, corners3D, detected_images
     )
+    arm_to_base_translation = arm_to_base_translation[detected_inds]
+    arm_to_base_rotation = arm_to_base_rotation[detected_inds]
     # Getting hand-in-eye calibration
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
-        visualize_extrinsics_uncertainty(camera_parameters)
         viusalize_target_to_cam_poses_2D(
-            images, camera_parameters, detected_corners, "test"
+            detected_images, camera_parameters, detected_corners, "test"
         )
-        viusalize_target_to_cam_poses_3D(images, camera_parameters)
+        viusalize_target_to_cam_poses_3D(
+            detected_images, camera_parameters, normalize=True
+        )
         visualize_hand_eye_poses(
-            images, camera_parameters, hand_eye_calibration_result, normalize=False
+            detected_images,
+            camera_parameters,
+            hand_eye_calibration_result,
+            normalize=True,
         )
     # TODO
+    # Add "nothing detected"
+    # Support when "not everything is detected"
     # Add uncertainty hists and hints
     # Record test dataset
     # Add demo video
