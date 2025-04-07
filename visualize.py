@@ -64,7 +64,7 @@ def visualize_geometry(
         while True:
             time.sleep(2.0)
     except KeyboardInterrupt:
-        pass
+        server.stop()
 
 
 def viusalize_target_to_cam_poses_2D(

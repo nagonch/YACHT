@@ -42,24 +42,22 @@ class HandEyeCalibrationResult:
 
 def detect_corners(
     images: List[NDArray],
-    checkerboard_size: float = 28.5e-3,
-    checkerboard_dims: Tuple[int] = (6, 8),
+    chessboard_size: float = 28.5e-3,
+    chessboard_dims: Tuple[int] = (6, 8),
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
 
-    corners3D = np.zeros(
-        (checkerboard_dims[0] * checkerboard_dims[1], 3), dtype=np.float32
-    )
+    corners3D = np.zeros((chessboard_dims[0] * chessboard_dims[1], 3), dtype=np.float32)
     corners_2D = np.meshgrid(
-        np.arange(checkerboard_dims[0]), np.arange(checkerboard_dims[1])
+        np.arange(chessboard_dims[0]), np.arange(chessboard_dims[1])
     )
     corners_2D = np.stack(corners_2D, axis=-1).reshape(-1, 2)
-    corners3D[:, :2] = corners_2D * checkerboard_size
+    corners3D[:, :2] = corners_2D * chessboard_size
     detected_images = []
     detected_corners = []
     for image in images:
         grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         is_detected, corners = cv2.findChessboardCorners(
-            grayscale_image, checkerboard_dims
+            grayscale_image, chessboard_dims
         )
         if is_detected:
             corners = cv2.cornerSubPix(
@@ -103,11 +101,8 @@ def get_camera_parameters(
     )
     cam_calib_params = CameraParameters(*cam_calib_params, width, height)
     cam_calib_params.target_to_cam_rotation = np.stack(
-        cam_calib_params.target_to_cam_rotation
-    )[:, :, 0]
-    cam_calib_params.target_to_cam_rotation = R.from_euler(
-        "xyz", cam_calib_params.target_to_cam_rotation
-    ).as_matrix()
+        [cv2.Rodrigues(rvec)[0] for rvec in cam_calib_params.target_to_cam_rotation]
+    )
     cam_calib_params.target_to_cam_translation = np.stack(
         cam_calib_params.target_to_cam_translation
     )[:, :, 0]
@@ -173,8 +168,8 @@ if __name__ == "__main__":
     # Detecting corners
     detected_corners, corners3D, detected_images = detect_corners(
         images,
-        checkerboard_dims=CONFIG["checkerboard-dims"],
-        checkerboard_size=CONFIG["checkerboard-size"],
+        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+        chessboard_size=CONFIG["chessboard-size"],
     )
     # Getting camera calibration parameters
     camera_parameters = get_camera_parameters(
@@ -185,9 +180,9 @@ if __name__ == "__main__":
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
-        viusalize_target_to_cam_poses_2D(
-            images, camera_parameters, detected_corners, "test"
-        )
+        # viusalize_target_to_cam_poses_2D(
+        #     images, camera_parameters, detected_corners, "test"
+        # )
         viusalize_target_to_cam_poses_3D(images, camera_parameters)
         visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
     # TODO
@@ -198,3 +193,4 @@ if __name__ == "__main__":
     # File standard for calibration results
     # Split code into functions
     # Readme
+    # Add logs
