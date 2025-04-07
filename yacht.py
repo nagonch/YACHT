@@ -20,6 +20,8 @@ class CameraParameters:
     distortion_coeffs: NDArray  # [5]
     target_to_cam_rotation: NDArray  # [N, 3, 3]
     target_to_cam_translation: NDArray  # [N, 3]
+    image_w: int
+    image_h: int
 
 
 @dataclass
@@ -93,7 +95,7 @@ def get_camera_parameters(
         cameraMatrix=None,
         distCoeffs=None,
     )
-    cam_calib_params = CameraParameters(*cam_calib_params)
+    cam_calib_params = CameraParameters(*cam_calib_params, width, height)
     cam_calib_params.target_to_cam_rotation = np.stack(
         cam_calib_params.target_to_cam_rotation
     )[:, :, 0]
