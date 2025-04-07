@@ -19,7 +19,7 @@ def visualize_poses(
     images,
     camera_parameters,
     hand_eye_calibration_result,
-    frustum_scale=0.1,
+    frames_scale=0.1,
     scene_scale=10,
     normalize_points=False,
 ):
@@ -53,9 +53,37 @@ def visualize_poses(
             name=f"{i}_cam",
             aspect=aspect_ratio,
             fov=fov,
-            scale=frustum_scale,
+            scale=frames_scale,
             line_width=0.5,
             image=image,
+            wxyz=R.from_matrix(rotation).as_quat(),
+            position=translation,
+        )
+    for i, (rotation, translation) in enumerate(
+        zip(
+            hand_eye_calibration_result.arm_to_base_rotation,
+            hand_eye_calibration_result.arm_to_base_translation,
+        )
+    ):
+        server.scene.add_frame(
+            axes_length=frames_scale * 2,
+            origin_radius=frames_scale / 5,
+            axes_radius=frames_scale / 10,
+            name=f"{i}_arm",
+            wxyz=R.from_matrix(rotation).as_quat(),
+            position=translation,
+        )
+    for i, (rotation, translation) in enumerate(
+        zip(
+            hand_eye_calibration_result.target_to_base_rotation,
+            hand_eye_calibration_result.target_to_base_translation,
+        ),
+    ):
+        server.scene.add_frame(
+            axes_length=frames_scale * 2,
+            origin_radius=frames_scale / 5,
+            axes_radius=frames_scale / 10,
+            name=f"{i}_target",
             wxyz=R.from_matrix(rotation).as_quat(),
             position=translation,
         )
