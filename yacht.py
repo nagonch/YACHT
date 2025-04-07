@@ -15,7 +15,64 @@ with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
 
 
-def visualize_poses(
+def viusalize_target_to_cam_poses(
+    images,
+    camera_parameters,
+    frames_scale=0.1,
+    scene_scale=10,
+    normalize_points=False,
+):
+    if normalize_points:
+        max_norm = np.linalg.norm(
+            camera_parameters.target_to_cam_translation, axis=1
+        ).max()
+        camera_parameters.target_to_cam_translation *= scene_scale / max_norm
+    cam_to_target_rotation = np.transpose(
+        camera_parameters.target_to_cam_rotation, (0, 2, 1)
+    )
+    cam_to_target_translation = -np.matvec(
+        cam_to_target_rotation, camera_parameters.target_to_cam_translation
+    )
+    aspect_ratio = camera_parameters.image_w / camera_parameters.image_h
+    fov = (
+        np.arctan2(camera_parameters.image_w / 2, camera_parameters.intrinsics[0, 0])
+        * 2
+    )
+    server = viser.ViserServer()
+
+    @server.on_client_connect
+    def _(client: viser.ClientHandle) -> None:
+        gui_info = client.gui.add_text("Client ID", initial_value=str(client.client_id))
+        gui_info.disabled = True
+
+    for i, (image, rotation, translation) in enumerate(
+        zip(
+            images,
+            cam_to_target_rotation,
+            cam_to_target_translation,
+        )
+    ):
+        server.scene.add_camera_frustum(
+            name=f"{i}_cam",
+            aspect=aspect_ratio,
+            fov=fov,
+            scale=frames_scale,
+            line_width=0.5,
+            image=image,
+            wxyz=R.from_matrix(rotation).as_quat(),
+            position=translation,
+        )
+    server.scene.add_frame(
+        name="world",
+    )
+    try:
+        while True:
+            time.sleep(2.0)
+    except KeyboardInterrupt:
+        pass
+
+
+def visualize_hand_eye_poses(
     images,
     camera_parameters,
     hand_eye_calibration_result,
@@ -264,12 +321,13 @@ if __name__ == "__main__":
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
-    visualize_poses(images, camera_parameters, hand_eye_calibration_result)
+    if CONFIG["visualize"]:
+        viusalize_target_to_cam_poses(images, camera_parameters)
+        visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
     # TODO
-    # Add verbose parameter
     # Visualize reprojected points + coordinate frame on the image
-    # Add viser visualization
     # Calculate hand-eye calibration error
     # File standard for camera poses (ORDER MATTERS)
     # File standard for calibration results
+    # Split code into functions
     # Readme

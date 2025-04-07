@@ -1,3 +1,4 @@
 data-folder: data
 checkerboard-size: 28.5e-3
 checkerboard-dims: [7, 6]
+verbose: true # if true, visualizes every step
