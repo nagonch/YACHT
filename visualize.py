@@ -41,7 +41,6 @@ def visualize_geometry(
             )
             * 2
         )
-        from scipy.spatial.transform import Rotation as R
 
         for i, (image, (rotation, translation)) in enumerate(
             zip(images, camera_frustums)
@@ -167,25 +166,26 @@ def visualize_hand_eye_poses(
     frame_translations = (
         hand_eye_calibration_result.arm_to_base_translation,
         hand_eye_calibration_result.target_to_base_translation,
+        hand_eye_calibration_result.cam_to_base_translation,
     )
     frame_rotations = (
         hand_eye_calibration_result.arm_to_base_rotation,
         hand_eye_calibration_result.target_to_base_rotation,
+        hand_eye_calibration_result.cam_to_base_rotation,
     )
     if normalize:
         frame_translations = normalize_points(
             frame_translations,
             rescale=scene_scale,
         )
-    frame_translations = np.concatenate(frame_translations, axis=0)
-    frame_rotations = np.concatenate(frame_rotations, axis=0)
+    cam_to_base_translation = frame_translations[-1]
+    cam_to_base_rotation = frame_rotations[-1]
+    frame_translations = np.concatenate(frame_translations[:-1], axis=0)
+    frame_rotations = np.concatenate(frame_rotations[:-1], axis=0)
     visualize_geometry(
         images=images,
         camera_parameters=camera_parameters,
-        camera_frustums=zip(
-            hand_eye_calibration_result.cam_to_base_rotation,
-            hand_eye_calibration_result.cam_to_base_translation,
-        ),
+        camera_frustums=zip(cam_to_base_rotation, cam_to_base_translation),
         frames=zip(frame_rotations, frame_translations),
         frames_scale=frames_scale,
     )

@@ -123,12 +123,14 @@ def get_eye_to_hand_transformation(
     )
     cam_to_arm_translation = cam_to_arm_translation.reshape(-1)
     cam_to_base_rotation = arm_to_base_rotation @ cam_to_arm_rotation
-    cam_to_base_translation = arm_to_base_translation + cam_to_arm_translation
+    cam_to_base_translation = arm_to_base_translation + np.matvec(
+        arm_to_base_rotation, cam_to_arm_translation
+    )
     target_to_base_rotation = (
         cam_to_base_rotation @ camera_parameters.target_to_cam_rotation
     )
-    target_to_base_translation = (
-        cam_to_base_translation + camera_parameters.target_to_cam_translation
+    target_to_base_translation = cam_to_base_translation + np.matvec(
+        cam_to_base_rotation, camera_parameters.target_to_cam_translation
     )
     result = HandEyeCalibrationResult(
         arm_to_base_rotation,
@@ -168,7 +170,7 @@ if __name__ == "__main__":
     # Detecting corners
     detected_corners, corners3D, detected_images = detect_corners(
         images,
-        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+        chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
     # Getting camera calibration parameters
@@ -180,14 +182,14 @@ if __name__ == "__main__":
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
-        # viusalize_target_to_cam_poses_2D(
-        #     images, camera_parameters, detected_corners, "test"
-        # )
+        viusalize_target_to_cam_poses_2D(
+            images, camera_parameters, detected_corners, "test"
+        )
         viusalize_target_to_cam_poses_3D(images, camera_parameters)
-        visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
+        visualize_hand_eye_poses(
+            images, camera_parameters, hand_eye_calibration_result, normalize=False
+        )
     # TODO
-    # Figure out the coords problem
-    # Figure out the viser frames problem
     # Remove shit code
     # Calculate hand-eye calibration error
     # File standard for camera poses (ORDER MATTERS)
