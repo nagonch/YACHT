@@ -22,6 +22,14 @@ class CameraParameters:
     target_to_cam_translation: NDArray  # [N, 3]
 
 
+@dataclass
+class HandEyeCalibrationResult:
+    cam_to_arm_rotation: NDArray
+    cam_to_arm_translation: NDArray
+    target_to_base_rotation: NDArray
+    target_to_base_translation: NDArray
+
+
 def detect_corners(
     images: List[NDArray],
     checkerboard_size: float = 28.5e-3,
@@ -97,6 +105,37 @@ def get_camera_parameters(
     return cam_calib_params
 
 
+def get_eye_to_hand_transformation(
+    arm_to_base_rotation: NDArray,
+    arm_to_base_translation: NDArray,
+    camera_parameters: CameraParameters,
+) -> HandEyeCalibrationResult:
+    cam_to_arm_rotation, cam_to_arm_translation = cv2.calibrateHandEye(
+        arm_to_base_rotation,
+        arm_to_base_translation,
+        camera_parameters.target_to_cam_rotation,
+        camera_parameters.target_to_cam_translation,
+    )
+    cam_to_arm_translation = cam_to_arm_translation.reshape(-1)
+    target_to_base_rotation = (
+        arm_to_base_rotation
+        @ cam_to_arm_rotation
+        @ camera_parameters.target_to_cam_rotation
+    )
+    target_to_base_translation = (
+        arm_to_base_translation
+        + cam_to_arm_translation
+        + camera_parameters.target_to_cam_translation
+    )
+    result = HandEyeCalibrationResult(
+        cam_to_arm_rotation,
+        cam_to_arm_translation,
+        target_to_base_rotation,
+        target_to_base_translation,
+    )
+    return result
+
+
 if __name__ == "__main__":
     # Check folder structure
     data_folder = CONFIG["data-folder"]
@@ -108,7 +147,12 @@ if __name__ == "__main__":
         f"{data_folder}/poses.txt"
     ), f"Poses file '{data_folder}/poses.txt' not found"
 
-    # Get images filenames
+    # Load poses
+    arm_poses = np.loadtxt(f"{data_folder}/poses.txt").reshape(-1, 4, 4)
+    arm_to_base_translation = arm_poses[:, :3, -1] * 1e-3
+    arm_to_base_rotation = arm_poses[:, :3, :3]
+
+    # Load images
     image_filenames = sorted(os.listdir(f"{data_folder}/images"))
     images = [
         np.array(Image.open(f"{data_folder}/images/{image_fname}"))
@@ -123,4 +167,8 @@ if __name__ == "__main__":
     # Getting camera calibration parameters
     camera_parameters = get_camera_parameters(
         detected_corners, corners3D, detected_images
+    )
+    # Getting hand-in-eye calibration
+    hand_eye_calibration_result = get_eye_to_hand_transformation(
+        arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
