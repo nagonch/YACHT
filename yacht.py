@@ -172,3 +172,11 @@ if __name__ == "__main__":
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
+    # TODO
+    # Add verbose parameter
+    # Visualize reprojected points + coordinate frame on the image
+    # Add viser visualization
+    # Calculate hand-eye calibration error
+    # File standard for camera poses (ORDER MATTERS)
+    # File standard for calibration results
+    # Readme
