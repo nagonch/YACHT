@@ -69,7 +69,7 @@ def viusalize_target_to_cam_poses(
         while True:
             time.sleep(2.0)
     except KeyboardInterrupt:
-        pass
+        server.stop()
 
 
 def visualize_hand_eye_poses(
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
-    if CONFIG["visualize"]:
+    if CONFIG["verbose"]:
         viusalize_target_to_cam_poses(images, camera_parameters)
         visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
     # TODO
