@@ -7,10 +7,11 @@ from typing import List, Tuple
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
-import viser
-import time
-from visualize import viusalize_target_to_cam_poses, visualize_hand_eye_poses
+from visualize import (
+    viusalize_target_to_cam_poses_2D,
+    viusalize_target_to_cam_poses_3D,
+    visualize_hand_eye_poses,
+)
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
@@ -184,7 +185,8 @@ if __name__ == "__main__":
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
-        viusalize_target_to_cam_poses(images, camera_parameters)
+        viusalize_target_to_cam_poses_2D(images, camera_parameters, "test")
+        viusalize_target_to_cam_poses_3D(images, camera_parameters)
         visualize_hand_eye_poses(images, camera_parameters, hand_eye_calibration_result)
     # TODO
     # Visualize reprojected points + coordinate frame on the image

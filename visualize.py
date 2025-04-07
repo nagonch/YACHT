@@ -3,6 +3,9 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from utils import normalize_points
 import time
+import cv2
+import matplotlib.pyplot as plt
+from PIL import Image
 
 
 def add_frame(scene, rotation, translation, name, frame_scale=0.1):
@@ -64,7 +67,50 @@ def visualize_geometry(
         pass
 
 
-def viusalize_target_to_cam_poses(
+def viusalize_target_to_cam_poses_2D(
+    images,
+    camera_parameters,
+    output_folder,
+):
+    intrinsics_matrix = camera_parameters.intrinsics
+    target_to_cam_rotation = camera_parameters.target_to_cam_rotation
+    target_to_cam_translation = camera_parameters.target_to_cam_translation
+    for pose_i, (image, rotation, translation) in enumerate(
+        zip(images, target_to_cam_rotation, target_to_cam_translation)
+    ):
+        axes_3D = np.eye(3)
+        rotated_axes = rotation @ axes_3D.T
+        translated_axes = rotated_axes + translation.reshape(3, 1)
+        projected_axes, _ = cv2.projectPoints(
+            translated_axes.T,
+            np.zeros(3),
+            np.zeros(3),
+            intrinsics_matrix,
+            distCoeffs=camera_parameters.distortion_coeffs,
+        )
+        projected_axes = projected_axes.reshape(-1, 2).astype(int)
+        projected_origin, _ = cv2.projectPoints(
+            translation, np.zeros(3), np.zeros(3), intrinsics_matrix, None
+        )
+        projected_origin = projected_origin.reshape(-1, 2).astype(int)[0]
+        lengths = np.linalg.norm(projected_axes - projected_origin, axis=1)
+        projected_axes = (
+            projected_origin
+            + (projected_axes - projected_origin) / lengths[:, None] * 50
+        )
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]  # X (red), Y (green), Z (blue)
+        for i, color in enumerate(colors):
+            cv2.line(
+                image,
+                tuple(projected_origin.astype(np.int32)),
+                tuple(projected_axes[i].astype(np.int32)),
+                color,
+                2,
+            )
+        Image.fromarray(image).save(f"{output_folder}/{str(pose_i).zfill(4)}.png")
+
+
+def viusalize_target_to_cam_poses_3D(
     images,
     camera_parameters,
     frames_scale=0.1,
