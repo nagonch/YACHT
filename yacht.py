@@ -5,9 +5,20 @@ import os
 import cv2
 from typing import List, Tuple
 from numpy.typing import NDArray
+from dataclasses import dataclass
+from scipy.spatial.transform import Rotation as R
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
+
+
+@dataclass
+class CameraParameters:
+    rms_error: float
+    intrinsics: NDArray  # [3, 3]
+    distortion_coeffs: NDArray  # [5]
+    target_to_cam_rotation: NDArray  # [N, 3, 3]
+    target_to_cam_translation: NDArray  # [N, 3]
 
 
 def detect_corners(
@@ -15,6 +26,7 @@ def detect_corners(
     checkerboard_size: float = 28.5e-3,
     checkerboard_dims: Tuple[int] = (6, 8),
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
+
     corners3D = np.zeros(
         (checkerboard_dims[0] * checkerboard_dims[1], 3), dtype=np.float32
     )
@@ -51,6 +63,39 @@ def detect_corners(
     )
 
 
+def get_camera_parameters(
+    detected_corners: List[NDArray],
+    corners3D: List[NDArray],
+    detected_images: List[NDArray],
+) -> CameraParameters:
+    n_images = len(detected_images)
+    height, width = detected_images[0].shape[:2]
+    cam_calib_params = cv2.calibrateCamera(
+        np.stack(
+            [
+                corners3D,
+            ]
+            * n_images
+        ),
+        detected_corners,
+        (width, height),
+        cameraMatrix=None,
+        distCoeffs=None,
+    )
+    cam_calib_params = CameraParameters(*cam_calib_params)
+    cam_calib_params.target_to_cam_rotation = np.stack(
+        cam_calib_params.target_to_cam_rotation
+    )[:, :, 0]
+    cam_calib_params.target_to_cam_rotation = R.from_euler(
+        "xyz", cam_calib_params.target_to_cam_rotation
+    ).as_matrix()
+    cam_calib_params.target_to_cam_translation = np.stack(
+        cam_calib_params.target_to_cam_translation
+    )[:, :, 0]
+    cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
+    return cam_calib_params
+
+
 if __name__ == "__main__":
     # Check folder structure
     data_folder = CONFIG["data-folder"]
@@ -68,4 +113,9 @@ if __name__ == "__main__":
         np.array(Image.open(f"{data_folder}/images/{image_fname}"))
         for image_fname in image_filenames
     ]
-    print(detect_corners(images))
+    # Detecting corners
+    detected_corners, corners3D, detected_images = detect_corners(images)
+    # Getting camera calibration parameters
+    cam_calib_params = get_camera_parameters(
+        detected_corners, corners3D, detected_images
+    )
