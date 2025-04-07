@@ -8,6 +8,7 @@ from numpy.typing import NDArray
 from dataclasses import dataclass
 from scipy.spatial.transform import Rotation as R
 from visualize import (
+    visualize_extrinsics_uncertainty,
     viusalize_target_to_cam_poses_2D,
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
@@ -182,6 +183,7 @@ if __name__ == "__main__":
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
+        visualize_extrinsics_uncertainty(camera_parameters)
         viusalize_target_to_cam_poses_2D(
             images, camera_parameters, detected_corners, "test"
         )
@@ -190,6 +192,9 @@ if __name__ == "__main__":
             images, camera_parameters, hand_eye_calibration_result, normalize=False
         )
     # TODO
+    # Add uncertainty hists and hints
+    # Record test dataset
+    # Add demo video
     # Remove shit code
     # Calculate hand-eye calibration error
     # File standard for camera poses (ORDER MATTERS)

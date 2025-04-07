@@ -6,6 +6,7 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 from PIL import Image
+from scipy.stats import norm
 
 
 def add_frame(scene, rotation, translation, name, frame_scale=0.1):
@@ -66,6 +67,24 @@ def visualize_geometry(
             time.sleep(2.0)
     except KeyboardInterrupt:
         server.stop()
+
+
+def visualize_extrinsics_uncertainty(camera_parameters):
+    target_to_cam_rotation = camera_parameters.target_to_cam_rotation
+    target_to_cam_translation = camera_parameters.target_to_cam_translation
+    target_to_cam_euler = R.from_matrix(target_to_cam_rotation).as_euler(
+        "xyz", degrees=True
+    )
+    fig, ax = plt.subplots(2, 1, figsize=(12, 48))
+    for j, data in enumerate((target_to_cam_euler, target_to_cam_translation)):
+        for i, signal_1D in enumerate(data.T):
+            mu = np.mean(signal_1D, axis=0)
+            sigma = np.std(signal_1D, axis=0)
+            x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1000)
+            y = norm.pdf(x, mu, sigma)
+            ax[j].plot(x, y)
+    plt.show()
+    plt.close()
 
 
 def viusalize_target_to_cam_poses_2D(
