@@ -7,6 +7,7 @@ from typing import List, Tuple
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from scipy.spatial.transform import Rotation as R
+import matplotlib.pyplot as plt
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
@@ -114,8 +115,12 @@ if __name__ == "__main__":
         for image_fname in image_filenames
     ]
     # Detecting corners
-    detected_corners, corners3D, detected_images = detect_corners(images)
+    detected_corners, corners3D, detected_images = detect_corners(
+        images,
+        checkerboard_dims=CONFIG["checkerboard-dims"],
+        checkerboard_size=CONFIG["checkerboard-size"],
+    )
     # Getting camera calibration parameters
-    cam_calib_params = get_camera_parameters(
+    camera_parameters = get_camera_parameters(
         detected_corners, corners3D, detected_images
     )

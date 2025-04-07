@@ -1,1 +1,3 @@
 data-folder: data
+checkerboard-size: 28.5e-3
+checkerboard-dims: [7, 6]
