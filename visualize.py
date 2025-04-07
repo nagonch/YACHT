@@ -70,13 +70,19 @@ def visualize_geometry(
 def viusalize_target_to_cam_poses_2D(
     images,
     camera_parameters,
+    detected_corners,
     output_folder,
 ):
     intrinsics_matrix = camera_parameters.intrinsics
     target_to_cam_rotation = camera_parameters.target_to_cam_rotation
     target_to_cam_translation = camera_parameters.target_to_cam_translation
-    for pose_i, (image, rotation, translation) in enumerate(
-        zip(images, target_to_cam_rotation, target_to_cam_translation)
+    for pose_i, (image, rotation, translation, detected_corners_i) in enumerate(
+        zip(
+            images,
+            target_to_cam_rotation,
+            target_to_cam_translation,
+            detected_corners,
+        )
     ):
         axes_3D = np.eye(3)
         rotated_axes = rotation @ axes_3D.T
@@ -107,7 +113,18 @@ def viusalize_target_to_cam_poses_2D(
                 color,
                 2,
             )
-        Image.fromarray(image).save(f"{output_folder}/{str(pose_i).zfill(4)}.png")
+
+        plt.imshow(image)
+        plt.scatter(
+            detected_corners_i[:, 0],
+            detected_corners_i[:, 1],
+            s=image.shape[0] / 100,
+            color="yellow",
+        )
+        plt.axis("off")
+        plt.tight_layout(pad=0)
+        plt.savefig(f"{output_folder}/{str(pose_i).zfill(4)}.png")
+        plt.close()
 
 
 def viusalize_target_to_cam_poses_3D(
