@@ -233,7 +233,6 @@ if __name__ == "__main__":
     # Record test dataset
     # Add demo video
     # Remove shit code
-    # Calculate hand-eye calibration error
     # File standard for camera poses (ORDER MATTERS)
     # File standard for calibration results
     # Readme
