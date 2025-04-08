@@ -77,7 +77,7 @@ def viusalize_target_to_cam_poses_2D(
     detected_corners,
     output_folder,
 ):
-    print("Projecting target poses to camera images...")
+
     intrinsics_matrix = camera_parameters.intrinsics
     target_to_cam_rotation = camera_parameters.target_to_cam_rotation
     target_to_cam_translation = camera_parameters.target_to_cam_translation
@@ -133,7 +133,6 @@ def viusalize_target_to_cam_poses_2D(
         plt.tight_layout(pad=0)
         plt.savefig(f"{output_folder}/{str(pose_i).zfill(4)}.png")
         plt.close()
-    print(f"done. Images saved to folder '{output_folder}'\n")
 
 
 def viusalize_target_to_cam_poses_3D(
@@ -143,9 +142,6 @@ def viusalize_target_to_cam_poses_3D(
     scene_scale=10,
     normalize=False,
 ):
-    print(
-        "Visualizing target to camera poses... (click the link or press Ctrl+C for next visualization)"
-    )
     if normalize:
         camera_parameters.target_to_cam_translation = normalize_points(
             (camera_parameters.target_to_cam_translation,), rescale=scene_scale
@@ -164,7 +160,6 @@ def viusalize_target_to_cam_poses_3D(
         frames=None,
         frames_scale=frames_scale,
     )
-    print("\n")
 
 
 def visualize_hand_eye_poses(
@@ -175,9 +170,7 @@ def visualize_hand_eye_poses(
     scene_scale=10,
     normalize=False,
 ):
-    print(
-        "Visualizing target, camera and arm poses... (click the link or press Ctrl+C for next visualization)"
-    )
+
     frame_translations = (
         hand_eye_calibration_result.arm_to_base_translation,
         hand_eye_calibration_result.target_to_base_translation,
@@ -204,7 +197,6 @@ def visualize_hand_eye_poses(
         frames=zip(frame_rotations, frame_translations),
         frames_scale=frames_scale,
     )
-    print("\n")
 
 
 if __name__ == "__main__":

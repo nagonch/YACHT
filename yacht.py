@@ -46,7 +46,6 @@ def detect_corners(
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
-    print("Detecting corners...")
     corners3D = np.zeros((chessboard_dims[0] * chessboard_dims[1], 3), dtype=np.float32)
     corners_2D = np.meshgrid(
         np.arange(chessboard_dims[0]), np.arange(chessboard_dims[1])
@@ -90,7 +89,6 @@ def get_camera_parameters(
     corners3D: List[NDArray],
     detected_images: List[NDArray],
 ) -> CameraParameters:
-    print("Calibrating camera...", end="")
     n_images = len(detected_images)
     height, width = detected_images[0].shape[:2]
     cam_calib_params = cv2.calibrateCamera(
@@ -113,7 +111,7 @@ def get_camera_parameters(
         cam_calib_params.target_to_cam_translation
     )[:, :, 0]
     cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
-    print(f"done. RMS error: {cam_calib_params.rms_error}\n")
+
     return cam_calib_params
 
 
@@ -122,7 +120,6 @@ def get_eye_to_hand_transformation(
     arm_to_base_translation: NDArray,
     camera_parameters: CameraParameters,
 ) -> HandEyeCalibrationResult:
-    print("Calibrating hand-eye transformation... ", end="")
     cam_to_arm_rotation, cam_to_arm_translation = cv2.calibrateHandEye(
         arm_to_base_rotation,
         arm_to_base_translation,
@@ -150,7 +147,6 @@ def get_eye_to_hand_transformation(
         target_to_base_rotation,
         target_to_base_translation,
     )
-    print("done.\n")
     return result
 
 
@@ -176,12 +172,16 @@ if __name__ == "__main__":
         np.array(Image.open(f"{data_folder}/images/{image_fname}"))
         for image_fname in image_filenames
     ]
+
     # Detecting corners
+    print("Detecting corners...")
     detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
         chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
+    print("done.\n")
+
     if len(detected_corners) == 0:
         raise RuntimeError(
             f"No corners detected in {len(images)} images. "
@@ -190,22 +190,39 @@ if __name__ == "__main__":
         )
 
     # Camera calibration
+    print("Calibrating camera...", end="")
     camera_parameters = get_camera_parameters(
         detected_corners, corners3D, detected_images
     )
+    print(f"done. RMS error: {camera_parameters.rms_error}\n")
+
     arm_to_base_translation = arm_to_base_translation[detected_inds]
     arm_to_base_rotation = arm_to_base_rotation[detected_inds]
 
     # Camera to arm calibration
+    print("Calibrating hand-eye transformation... ", end="")
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
+    print("done.\n")
+
     if CONFIG["verbose"]:
-        # viusalize_target_to_cam_poses_2D(
-        #     detected_images, camera_parameters, detected_corners, "test"
-        # )
+        print("Projecting target poses to camera images...")
+        output_folder = f"{data_folder}/visualization"
+        viusalize_target_to_cam_poses_2D(
+            detected_images, camera_parameters, detected_corners, output_folder
+        )
+        print(f"done. Images saved to folder '{output_folder}'\n")
+
+        print(
+            "Visualizing target to camera poses... (click the link or press Ctrl+C for next visualization)"
+        )
         viusalize_target_to_cam_poses_3D(
             detected_images, camera_parameters, normalize=True
+        )
+        print("\n")
+        print(
+            "Visualizing target, camera and arm poses... (click the link or press Ctrl+C for next visualization)"
         )
         visualize_hand_eye_poses(
             detected_images,
@@ -213,12 +230,14 @@ if __name__ == "__main__":
             hand_eye_calibration_result,
             normalize=True,
         )
+        print("\n")
     # TODO
     # Record test dataset
     # Add demo video
     # Remove shit code
     # Calculate hand-eye calibration error
+    # Visualization should pass the scene
     # File standard for camera poses (ORDER MATTERS)
     # File standard for calibration results
     # Readme
-    # Add logs
+    # Replace prints with logging
