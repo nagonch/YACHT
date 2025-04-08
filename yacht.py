@@ -5,42 +5,19 @@ import os
 import cv2
 from typing import List, Tuple
 from numpy.typing import NDArray
-from dataclasses import dataclass
 from visualize import (
     create_viser_server,
     viusalize_target_to_cam_poses_2D,
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
 )
-from utils import pose_pretty_string
+from utils import pose_pretty_string, estimate_hand_eye_error
 from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
+from structs import CameraParameters, HandEyeCalibrationResult
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
-
-
-@dataclass
-class CameraParameters:
-    rms_error: float
-    intrinsics: NDArray  # [3, 3]
-    distortion_coeffs: NDArray  # [5]
-    target_to_cam_rotation: NDArray  # [N, 3, 3]
-    target_to_cam_translation: NDArray  # [N, 3]
-    image_w: int
-    image_h: int
-
-
-@dataclass
-class HandEyeCalibrationResult:
-    arm_to_base_rotation: NDArray
-    arm_to_base_translation: NDArray
-    cam_to_arm_rotation: NDArray
-    cam_to_arm_translation: NDArray
-    cam_to_base_rotation: NDArray
-    cam_to_base_translation: NDArray
-    target_to_base_rotation: NDArray
-    target_to_base_translation: NDArray
 
 
 def detect_corners(
@@ -205,10 +182,21 @@ if __name__ == "__main__":
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
+    print("done.")
+    print("Cam to arm result:")
     print(
-        f"done.\nCam to arm result:\n{pose_pretty_string(hand_eye_calibration_result.cam_to_arm_rotation, hand_eye_calibration_result.cam_to_arm_translation)}"
+        pose_pretty_string(
+            hand_eye_calibration_result.cam_to_arm_rotation,
+            hand_eye_calibration_result.cam_to_arm_translation,
+        )
     )
-
+    print("Cam to arm error (target to base uncertainty):")
+    print(
+        pose_pretty_string(
+            *estimate_hand_eye_error(hand_eye_calibration_result),
+            convert_from_matrix=False,
+        )
+    )
     if CONFIG["verbose"]:
         print("Projecting target poses to camera images...", end="")
         output_folder = f"{data_folder}/visualization"

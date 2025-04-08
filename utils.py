@@ -2,6 +2,7 @@ from numpy.typing import NDArray
 from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from structs import HandEyeCalibrationResult
 
 
 def normalize_points(points: Tuple[NDArray], rescale=1):
@@ -11,11 +12,39 @@ def normalize_points(points: Tuple[NDArray], rescale=1):
     return points
 
 
-def pose_pretty_string(rotation, translation):
-    euler_angles = R.from_matrix(rotation).as_euler("xyz", degrees=True)
-    result = f"Tra: x: {translation[0]:.3f}, y: {translation[1]:.3f}, z: {translation[2]:.3f}\n"
-    result += f"Rot: x: {euler_angles[0]:.3f}, y: {euler_angles[1]:.3f}, z: {euler_angles[2]:.3f}\n"
+def pose_pretty_string(rotation, translation, convert_from_matrix=True):
+    if convert_from_matrix:
+        rotation = R.from_matrix(rotation).as_euler("xyz", degrees=True)
+    result = f"Tra: x: {translation[0]:.3f} m, y: {translation[1]:.3f} m, z: {translation[2]:.3f} m\n"
+    result += (
+        f"Rot: x: {rotation[0]:.3f}°, y: {rotation[1]:.3f}°, z: {rotation[2]:.3f}°\n"
+    )
     return result
+
+
+def estimate_hand_eye_error(calib_result: HandEyeCalibrationResult):
+    target_to_base_rotations = calib_result.target_to_base_rotation
+    target_to_base_translations = calib_result.target_to_base_translation
+    mean_target_coord = target_to_base_translations.mean(axis=0)
+    mean_target_rotation_quat = (
+        R.from_matrix(target_to_base_rotations).as_quat().mean(axis=0)
+    )
+    mean_target_rotation = R.from_quat(mean_target_rotation_quat).as_matrix()
+    mean_rotation_error_quat = (
+        R.from_matrix(
+            mean_target_rotation @ target_to_base_rotations.transpose(0, 2, 1)
+        )
+        .as_quat()
+        .mean(axis=0)
+    )
+    mean_rotation_error = R.from_quat(mean_rotation_error_quat).as_euler(
+        "xyz", degrees=True
+    )
+    mean_translation_error = np.linalg.norm(
+        (target_to_base_translations - mean_target_coord) ** 2,
+        axis=0,
+    )
+    return mean_rotation_error, mean_translation_error
 
 
 if __name__ == "__main__":
