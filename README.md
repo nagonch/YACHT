@@ -36,11 +36,6 @@ There's lots of "I've got a code for calibrating arm to camera, I can share if y
   - Second view — camera, arm, target poses in global frame. Target frames (frames in front of cameras) should cluster tightly. If spread out — error is high, add more diverse data
 
 ## TODOs
-- [ ] Record test dataset
-- [ ] Add demo video
 - [ ] File standard for camera poses (ORDER MATTERS)
 - [ ] File standard for calibration results
-- [ ] Install instructions
-- [ ] Data capture tips
-- [ ] Try initial PnP guess
 - [ ] Add comments for arguments
