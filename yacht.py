@@ -176,14 +176,21 @@ if __name__ == "__main__":
         chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
+    if len(detect_corners) == 0:
+        raise RuntimeError(
+            f"No corners detected in {len(images)} images. "
+            f"Ensure the chessboard dimensions ({CONFIG['chessboard-height']}x{CONFIG['chessboard-width']}) "
+            f"and size ({CONFIG['chessboard-size']}m) are correct, and the images are clear."
+        )
 
-    # # Getting camera calibration parameters
+    # Camera calibration
     camera_parameters = get_camera_parameters(
         detected_corners, corners3D, detected_images
     )
     arm_to_base_translation = arm_to_base_translation[detected_inds]
     arm_to_base_rotation = arm_to_base_rotation[detected_inds]
-    # Getting hand-in-eye calibration
+
+    # Camera to arm calibration
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
@@ -201,15 +208,11 @@ if __name__ == "__main__":
             normalize=True,
         )
     # TODO
-    # Add "nothing detected"
-    # Support when "not everything is detected"
-    # Add uncertainty hists and hints
     # Record test dataset
     # Add demo video
     # Remove shit code
     # Calculate hand-eye calibration error
     # File standard for camera poses (ORDER MATTERS)
     # File standard for calibration results
-    # Split code into functions
     # Readme
     # Add logs
