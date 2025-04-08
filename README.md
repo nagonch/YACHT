@@ -9,3 +9,4 @@ There's lots of "I've got a code for calibrating arm to camera, I can share if y
 - [ ] File standard for calibration results
 - [ ] Install instructions
 - [ ] Data capture tips
+- [ ] Try initial PnP guess
