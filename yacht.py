@@ -7,6 +7,7 @@ from typing import List, Tuple
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from visualize import (
+    create_viser_server,
     viusalize_target_to_cam_poses_2D,
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
@@ -210,34 +211,36 @@ if __name__ == "__main__":
         output_folder = f"{data_folder}/visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
-        viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, output_folder
-        )
+        # viusalize_target_to_cam_poses_2D(
+        #     detected_images, camera_parameters, detected_corners, output_folder
+        # )
         print(f"done. Images saved to folder '{output_folder}'\n")
 
+        viser_server = create_viser_server()
         print(
             "Visualizing target to camera poses... (click the link or press Ctrl+C for next visualization)"
         )
         viusalize_target_to_cam_poses_3D(
-            detected_images, camera_parameters, normalize=True
+            viser_server, detected_images, camera_parameters, normalize=True
         )
         print("\n")
         print(
             "Visualizing target, camera and arm poses... (click the link or press Ctrl+C for next visualization)"
         )
         visualize_hand_eye_poses(
+            viser_server,
             detected_images,
             camera_parameters,
             hand_eye_calibration_result,
             normalize=True,
         )
         print("\n")
+        viser_server.stop()
     # TODO
     # Record test dataset
     # Add demo video
     # Remove shit code
     # Calculate hand-eye calibration error
-    # Visualization should pass the scene
     # File standard for camera poses (ORDER MATTERS)
     # File standard for calibration results
     # Readme

@@ -19,13 +19,7 @@ def add_frame(scene, rotation, translation, name, frame_scale=0.1):
     )
 
 
-def visualize_geometry(
-    images,
-    camera_parameters,
-    camera_frustums,
-    frames,
-    frames_scale=0.1,
-):
+def create_viser_server():
     server = viser.ViserServer()
 
     @server.on_client_connect
@@ -33,6 +27,17 @@ def visualize_geometry(
         gui_info = client.gui.add_text("Client ID", initial_value=str(client.client_id))
         gui_info.disabled = True
 
+    return server
+
+
+def visualize_geometry(
+    server,
+    images,
+    camera_parameters,
+    camera_frustums,
+    frames,
+    frames_scale=0.1,
+):
     if camera_frustums is not None and camera_parameters is not None:
         aspect_ratio = camera_parameters.image_w / camera_parameters.image_h
         fov = (
@@ -65,10 +70,7 @@ def visualize_geometry(
         while True:
             time.sleep(2.0)
     except KeyboardInterrupt:
-        try:
-            server.stop()
-        except:
-            pass
+        server.scene.reset()
 
 
 def viusalize_target_to_cam_poses_2D(
@@ -136,6 +138,7 @@ def viusalize_target_to_cam_poses_2D(
 
 
 def viusalize_target_to_cam_poses_3D(
+    viser_server,
     images,
     camera_parameters,
     frames_scale=0.1,
@@ -154,6 +157,7 @@ def viusalize_target_to_cam_poses_3D(
         cam_to_target_rotation, camera_parameters.target_to_cam_translation
     )
     visualize_geometry(
+        server=viser_server,
         images=images,
         camera_parameters=camera_parameters,
         camera_frustums=zip(cam_to_target_rotation, cam_to_target_translation),
@@ -163,6 +167,7 @@ def viusalize_target_to_cam_poses_3D(
 
 
 def visualize_hand_eye_poses(
+    viser_server,
     images,
     camera_parameters,
     hand_eye_calibration_result,
@@ -191,6 +196,7 @@ def visualize_hand_eye_poses(
     frame_translations = np.concatenate(frame_translations[:-1], axis=0)
     frame_rotations = np.concatenate(frame_rotations[:-1], axis=0)
     visualize_geometry(
+        server=viser_server,
         images=images,
         camera_parameters=camera_parameters,
         camera_frustums=zip(cam_to_base_rotation, cam_to_base_translation),
