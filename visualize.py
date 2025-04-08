@@ -4,11 +4,20 @@ from scipy.spatial.transform import Rotation as R
 from utils import normalize_points
 import time
 import cv2
+from numpy.typing import NDArray
 import matplotlib.pyplot as plt
+from typing import List
 from tqdm import tqdm
+from structs import CameraParameters, HandEyeCalibrationResult
 
 
-def add_frame(scene, rotation, translation, name, frame_scale=0.1):
+def add_frame(
+    scene: viser.SceneApi,
+    rotation: NDArray,
+    translation: NDArray,
+    name: str,
+    frame_scale: float = 0.1,
+) -> None:
     scene.add_frame(
         axes_length=frame_scale * 2,
         origin_radius=frame_scale / 5,
@@ -19,7 +28,7 @@ def add_frame(scene, rotation, translation, name, frame_scale=0.1):
     )
 
 
-def create_viser_server():
+def create_viser_server() -> viser.ViserServer:
     server = viser.ViserServer(verbose=False)
 
     @server.on_client_connect
@@ -31,13 +40,13 @@ def create_viser_server():
 
 
 def visualize_geometry(
-    server,
-    images,
-    camera_parameters,
-    camera_frustums,
-    frames,
+    server: viser.ViserServer,
+    images: List[NDArray],
+    camera_parameters: CameraParameters,
+    camera_frustums: NDArray,
+    frames: NDArray,
     frames_scale=0.1,
-):
+) -> None:
     if camera_frustums is not None and camera_parameters is not None:
         aspect_ratio = camera_parameters.image_w / camera_parameters.image_h
         fov = (
@@ -74,11 +83,11 @@ def visualize_geometry(
 
 
 def viusalize_target_to_cam_poses_2D(
-    images,
-    camera_parameters,
-    detected_corners,
-    output_folder,
-):
+    images: List[NDArray],
+    camera_parameters: CameraParameters,
+    detected_corners: List[NDArray],
+    output_folder: str,
+) -> None:
 
     intrinsics_matrix = camera_parameters.intrinsics
     target_to_cam_rotation = camera_parameters.target_to_cam_rotation
@@ -138,13 +147,13 @@ def viusalize_target_to_cam_poses_2D(
 
 
 def viusalize_target_to_cam_poses_3D(
-    viser_server,
-    images,
-    camera_parameters,
-    frames_scale=0.1,
-    scene_scale=10,
-    normalize=False,
-):
+    viser_server: viser.ViserServer,
+    images: List[NDArray],
+    camera_parameters: CameraParameters,
+    frames_scale: float = 0.1,
+    scene_scale: float = 10.0,
+    normalize: bool = False,
+) -> None:
     if normalize:
         camera_parameters.target_to_cam_translation = normalize_points(
             (camera_parameters.target_to_cam_translation,), rescale=scene_scale
@@ -167,14 +176,14 @@ def viusalize_target_to_cam_poses_3D(
 
 
 def visualize_hand_eye_poses(
-    viser_server,
-    images,
-    camera_parameters,
-    hand_eye_calibration_result,
-    frames_scale=0.1,
-    scene_scale=10,
-    normalize=False,
-):
+    viser_server: viser.ViserServer,
+    images: List[NDArray],
+    camera_parameters: CameraParameters,
+    hand_eye_calibration_result: HandEyeCalibrationResult,
+    frames_scale: float = 0.1,
+    scene_scale: float = 10.0,
+    normalize: bool = False,
+) -> None:
 
     frame_translations = (
         hand_eye_calibration_result.arm_to_base_translation,
