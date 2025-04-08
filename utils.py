@@ -4,9 +4,16 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from structs import HandEyeCalibrationResult
 import yaml
+import logging
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
+LOGGER = logging.getLogger(__name__)
 
 
 def normalize_points(points: Tuple[NDArray], rescale: float = 1.0) -> List[NDArray]:
