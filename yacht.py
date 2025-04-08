@@ -12,6 +12,7 @@ from visualize import (
     visualize_hand_eye_poses,
 )
 from scipy.spatial.transform import Rotation as R
+from tqdm import tqdm
 
 with open("config.yaml") as file:
     CONFIG = yaml.safe_load(file)
@@ -45,7 +46,7 @@ def detect_corners(
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
-
+    print("Detecting corners...")
     corners3D = np.zeros((chessboard_dims[0] * chessboard_dims[1], 3), dtype=np.float32)
     corners_2D = np.meshgrid(
         np.arange(chessboard_dims[0]), np.arange(chessboard_dims[1])
@@ -55,7 +56,7 @@ def detect_corners(
     detected_images = []
     detected_corners = []
     detected_inds = []
-    for i, image in enumerate(images):
+    for i, image in enumerate(tqdm(images)):
         grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         is_detected, corners = cv2.findChessboardCorners(
             grayscale_image, chessboard_dims
@@ -75,6 +76,7 @@ def detect_corners(
             detected_inds.append(i)
             detected_images.append(image)
             detected_corners.append(corners)
+    print("done.\n")
     return (
         detected_inds,
         detected_corners,
@@ -88,6 +90,7 @@ def get_camera_parameters(
     corners3D: List[NDArray],
     detected_images: List[NDArray],
 ) -> CameraParameters:
+    print("Calibrating camera...", end="")
     n_images = len(detected_images)
     height, width = detected_images[0].shape[:2]
     cam_calib_params = cv2.calibrateCamera(
@@ -110,6 +113,7 @@ def get_camera_parameters(
         cam_calib_params.target_to_cam_translation
     )[:, :, 0]
     cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
+    print(f"done. RMS error: {cam_calib_params.rms_error}\n")
     return cam_calib_params
 
 
@@ -118,6 +122,7 @@ def get_eye_to_hand_transformation(
     arm_to_base_translation: NDArray,
     camera_parameters: CameraParameters,
 ) -> HandEyeCalibrationResult:
+    print("Calibrating hand-eye transformation... ", end="")
     cam_to_arm_rotation, cam_to_arm_translation = cv2.calibrateHandEye(
         arm_to_base_rotation,
         arm_to_base_translation,
@@ -145,6 +150,7 @@ def get_eye_to_hand_transformation(
         target_to_base_rotation,
         target_to_base_translation,
     )
+    print("done.\n")
     return result
 
 
@@ -176,7 +182,7 @@ if __name__ == "__main__":
         chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
-    if len(detect_corners) == 0:
+    if len(detected_corners) == 0:
         raise RuntimeError(
             f"No corners detected in {len(images)} images. "
             f"Ensure the chessboard dimensions ({CONFIG['chessboard-height']}x{CONFIG['chessboard-width']}) "
@@ -195,9 +201,9 @@ if __name__ == "__main__":
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     if CONFIG["verbose"]:
-        viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, "test"
-        )
+        # viusalize_target_to_cam_poses_2D(
+        #     detected_images, camera_parameters, detected_corners, "test"
+        # )
         viusalize_target_to_cam_poses_3D(
             detected_images, camera_parameters, normalize=True
         )

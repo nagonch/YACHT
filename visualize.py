@@ -5,6 +5,7 @@ from utils import normalize_points
 import time
 import cv2
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 def add_frame(scene, rotation, translation, name, frame_scale=0.1):
@@ -64,7 +65,10 @@ def visualize_geometry(
         while True:
             time.sleep(2.0)
     except KeyboardInterrupt:
-        server.stop()
+        try:
+            server.stop()
+        except:
+            pass
 
 
 def viusalize_target_to_cam_poses_2D(
@@ -73,16 +77,20 @@ def viusalize_target_to_cam_poses_2D(
     detected_corners,
     output_folder,
 ):
+    print("Projecting target poses to camera images...")
     intrinsics_matrix = camera_parameters.intrinsics
     target_to_cam_rotation = camera_parameters.target_to_cam_rotation
     target_to_cam_translation = camera_parameters.target_to_cam_translation
-    for pose_i, (image, rotation, translation, detected_corners_i) in enumerate(
-        zip(
-            images,
-            target_to_cam_rotation,
-            target_to_cam_translation,
-            detected_corners,
-        )
+    for pose_i, (image, rotation, translation, detected_corners_i) in tqdm(
+        enumerate(
+            zip(
+                images,
+                target_to_cam_rotation,
+                target_to_cam_translation,
+                detected_corners,
+            )
+        ),
+        total=len(images),
     ):
         axes_3D = np.eye(3)
         rotated_axes = rotation @ axes_3D.T
@@ -125,6 +133,7 @@ def viusalize_target_to_cam_poses_2D(
         plt.tight_layout(pad=0)
         plt.savefig(f"{output_folder}/{str(pose_i).zfill(4)}.png")
         plt.close()
+    print(f"done. Images saved to folder '{output_folder}'\n")
 
 
 def viusalize_target_to_cam_poses_3D(
@@ -134,6 +143,9 @@ def viusalize_target_to_cam_poses_3D(
     scene_scale=10,
     normalize=False,
 ):
+    print(
+        "Visualizing target to camera poses... (click the link or press Ctrl+C for next visualization)"
+    )
     if normalize:
         camera_parameters.target_to_cam_translation = normalize_points(
             (camera_parameters.target_to_cam_translation,), rescale=scene_scale
@@ -152,6 +164,7 @@ def viusalize_target_to_cam_poses_3D(
         frames=None,
         frames_scale=frames_scale,
     )
+    print("\n")
 
 
 def visualize_hand_eye_poses(
@@ -162,6 +175,9 @@ def visualize_hand_eye_poses(
     scene_scale=10,
     normalize=False,
 ):
+    print(
+        "Visualizing target, camera and arm poses... (click the link or press Ctrl+C for next visualization)"
+    )
     frame_translations = (
         hand_eye_calibration_result.arm_to_base_translation,
         hand_eye_calibration_result.target_to_base_translation,
@@ -188,6 +204,7 @@ def visualize_hand_eye_poses(
         frames=zip(frame_rotations, frame_translations),
         frames_scale=frames_scale,
     )
+    print("\n")
 
 
 if __name__ == "__main__":
