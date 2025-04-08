@@ -3,6 +3,10 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from structs import HandEyeCalibrationResult
+import yaml
+
+with open("config.yaml") as file:
+    CONFIG = yaml.safe_load(file)
 
 
 def normalize_points(points: Tuple[NDArray], rescale=1):
