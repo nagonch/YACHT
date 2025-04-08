@@ -20,7 +20,7 @@ def add_frame(scene, rotation, translation, name, frame_scale=0.1):
 
 
 def create_viser_server():
-    server = viser.ViserServer()
+    server = viser.ViserServer(verbose=False)
 
     @server.on_client_connect
     def _(client: viser.ClientHandle) -> None:

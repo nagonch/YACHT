@@ -12,6 +12,7 @@ from visualize import (
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
 )
+from utils import pose_pretty_string
 from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
 
@@ -204,10 +205,12 @@ if __name__ == "__main__":
     hand_eye_calibration_result = get_eye_to_hand_transformation(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
-    print("done.\n")
+    print(
+        f"done.\nCam to arm result:\n{pose_pretty_string(hand_eye_calibration_result.cam_to_arm_rotation, hand_eye_calibration_result.cam_to_arm_translation)}"
+    )
 
     if CONFIG["verbose"]:
-        print("Projecting target poses to camera images...")
+        print("Projecting target poses to camera images...", end="")
         output_folder = f"{data_folder}/visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -215,17 +218,18 @@ if __name__ == "__main__":
         #     detected_images, camera_parameters, detected_corners, output_folder
         # )
         print(f"done. Images saved to folder '{output_folder}'\n")
-
+        print("Starting viser server...")
         viser_server = create_viser_server()
+        print("done. Click the link above to open viser. \n")
         print(
-            "Visualizing target to camera poses... (click the link or press Ctrl+C for next visualization)"
+            "Visualizing target to camera poses in viser... (press Ctrl+C for next visualization)"
         )
         viusalize_target_to_cam_poses_3D(
             viser_server, detected_images, camera_parameters, normalize=True
         )
         print("\n")
         print(
-            "Visualizing target, camera and arm poses... (click the link or press Ctrl+C for next visualization)"
+            "Visualizing target, camera and arm poses in viser... (press Ctrl+C to finish)"
         )
         visualize_hand_eye_poses(
             viser_server,
@@ -237,6 +241,7 @@ if __name__ == "__main__":
         print("\n")
         viser_server.stop()
     # TODO
+    # Add typing everywhere
     # Record test dataset
     # Add demo video
     # Remove shit code
