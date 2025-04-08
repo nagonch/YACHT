@@ -33,9 +33,8 @@ def main(
 
     # Load poses
     arm_poses = np.loadtxt(f"{data_folder}/poses.txt").reshape(-1, 4, 4)
-    arm_to_base_translation = arm_poses[:, :3, -1] * 1e-3
+    arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
-
     # Load images
     image_filenames = sorted(os.listdir(f"{data_folder}/images"))
     images = [
@@ -52,7 +51,7 @@ def main(
     )
     LOGGER.info("done.")
     assert (
-        len(detected_corners) == 0
+        len(detected_corners) > 0
     ), f"No corners sized {chessboard_size:.1f} mm of a {chessboard_height} x {chessboard_width} board detected in images. "
 
     LOGGER.info(
