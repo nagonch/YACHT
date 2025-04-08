@@ -75,7 +75,6 @@ def detect_corners(
             detected_inds.append(i)
             detected_images.append(image)
             detected_corners.append(corners)
-    print("done.\n")
     return (
         detected_inds,
         detected_corners,
@@ -209,6 +208,8 @@ if __name__ == "__main__":
     if CONFIG["verbose"]:
         print("Projecting target poses to camera images...")
         output_folder = f"{data_folder}/visualization"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
             detected_images, camera_parameters, detected_corners, output_folder
         )
