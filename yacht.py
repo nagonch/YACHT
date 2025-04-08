@@ -87,12 +87,6 @@ def main() -> None:
         )
     )
 
-    # Visualization
-    if CONFIG["visualize-2D"] or CONFIG["visualize-3D"]:
-        LOGGER.info("Starting viser server...")
-        viser_server = create_viser_server()
-        LOGGER.info("done. Click the link above to open viser. \n")
-
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
         output_folder = f"{CONFIG['data-folder']}/visualization"
@@ -104,6 +98,10 @@ def main() -> None:
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
     if CONFIG["visualize-3D"]:
+        LOGGER.info("Starting viser server...")
+        viser_server = create_viser_server()
+        LOGGER.info("done. Click the link above to open viser. \n")
+
         LOGGER.info(
             "Visualizing target to camera poses in viser... (press Ctrl+C for next visualization)"
         )
