@@ -15,44 +15,41 @@ from opencv_functions import (
 )
 
 
-def main(
-    data_folder: str,
-    chessboard_height: int,
-    chessboard_width: int,
-    chessboard_size: float,
-    verbose: bool,
-) -> None:
+def main() -> None:
     # Check folder structure
-    assert os.path.exists(data_folder), f"Data folder '{data_folder}' does not exist."
     assert os.path.exists(
-        f"{data_folder}/images"
-    ), f"Images folder '{data_folder}/images' does not exist."
+        CONFIG["data-folder"]
+    ), f"Data folder '{CONFIG['data-folder']}' does not exist."
     assert os.path.exists(
-        f"{data_folder}/poses.txt"
-    ), f"Poses file '{data_folder}/poses.txt' not found"
+        f"{CONFIG['data-folder']}/images"
+    ), f"Images folder '{CONFIG['data-folder']}/images' does not exist."
+    assert os.path.exists(
+        f"{CONFIG['data-folder']}/poses.txt"
+    ), f"Poses file '{CONFIG['data-folder']}/poses.txt' not found"
 
     # Load poses
-    arm_poses = np.loadtxt(f"{data_folder}/poses.txt").reshape(-1, 4, 4)
+    arm_poses = np.loadtxt(f"{CONFIG['data-folder']}/poses.txt").reshape(-1, 4, 4)
     arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
+
     # Load images
-    image_filenames = sorted(os.listdir(f"{data_folder}/images"))
+    image_filenames = sorted(os.listdir(f"{CONFIG['data-folder']}/images"))
     images = [
-        np.array(Image.open(f"{data_folder}/images/{image_fname}"))
+        np.array(Image.open(f"{CONFIG['data-folder']}/images/{image_fname}"))
         for image_fname in image_filenames
     ]
 
-    # Detecting corners
+    # Detect corners
     LOGGER.info("Detecting corners...")
     detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
-        chessboard_dims=(chessboard_height, chessboard_width),
-        chessboard_size=chessboard_size * 1e-3,
+        chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
+        chessboard_size=CONFIG["chessboard-size"] * 1e-3,
     )
     LOGGER.info("done.")
     assert (
         len(detected_corners) > 0
-    ), f"No corners sized {chessboard_size:.1f} mm of a {chessboard_height} x {chessboard_width} board detected in images. "
+    ), f"No corners sized {CONFIG['chessboard-size']:.1f} mm of a {CONFIG['chessboard-height']} x {CONFIG['chessboard-width']} board detected in images. "
 
     LOGGER.info(
         f"{len(detected_corners)}/{len(images)} images with detected corners.\n"
@@ -74,6 +71,7 @@ def main(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     LOGGER.info("done.")
+
     LOGGER.info("Cam to arm result:")
     LOGGER.info(
         pose_pretty_string(
@@ -88,18 +86,24 @@ def main(
             convert_from_matrix=False,
         )
     )
-    if verbose:
+
+    # Visualization
+    if CONFIG["visualize-2D"] or CONFIG["visualize-3D"]:
+        LOGGER.info("Starting viser server...")
+        viser_server = create_viser_server()
+        LOGGER.info("done. Click the link above to open viser. \n")
+
+    if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
-        output_folder = f"{data_folder}/visualization"
+        output_folder = f"{CONFIG['data-folder']}/visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
             detected_images, camera_parameters, detected_corners, output_folder
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
-        LOGGER.info("Starting viser server...")
-        viser_server = create_viser_server()
-        LOGGER.info("done. Click the link above to open viser. \n")
+
+    if CONFIG["visualize-3D"]:
         LOGGER.info(
             "Visualizing target to camera poses in viser... (press Ctrl+C for next visualization)"
         )
@@ -107,6 +111,7 @@ def main(
             viser_server, detected_images, camera_parameters, normalize=True
         )
         LOGGER.info("\n")
+
         LOGGER.info(
             "Visualizing target, camera and arm poses in viser... (press Ctrl+C to finish)"
         )
@@ -122,10 +127,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main(
-        CONFIG["data-folder"],
-        CONFIG["chessboard-height"],
-        CONFIG["chessboard-width"],
-        CONFIG["chessboard-size"],
-        CONFIG["verbose"],
-    )
+    main()
