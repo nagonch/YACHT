@@ -1,5 +1,5 @@
 data-folder: data
-chessboard-size: 28.5e-3
+chessboard-size: 28.5 # mm
 chessboard-height: 8
 chessboard-width: 6
 verbose: true # if true, visualizes every step

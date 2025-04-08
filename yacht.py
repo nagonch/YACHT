@@ -15,9 +15,14 @@ from opencv_functions import (
 )
 
 
-if __name__ == "__main__":
+def main(
+    data_folder: str,
+    chessboard_height: int,
+    chessboard_width: int,
+    chessboard_size: float,
+    verbose: bool,
+) -> None:
     # Check folder structure
-    data_folder = CONFIG["data-folder"]
     assert os.path.exists(data_folder), f"Data folder '{data_folder}' does not exist."
     assert os.path.exists(
         f"{data_folder}/images"
@@ -42,17 +47,14 @@ if __name__ == "__main__":
     LOGGER.info("Detecting corners...")
     detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
-        chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
-        chessboard_size=CONFIG["chessboard-size"],
+        chessboard_dims=(chessboard_height, chessboard_width),
+        chessboard_size=chessboard_size * 1e-3,
     )
     LOGGER.info("done.")
+    assert (
+        len(detected_corners) == 0
+    ), f"No corners sized {chessboard_size:.1f} mm of a {chessboard_height} x {chessboard_width} board detected in images. "
 
-    if len(detected_corners) == 0:
-        raise RuntimeError(
-            f"No corners detected in {len(images)} images. "
-            f"Ensure the chessboard dimensions ({CONFIG['chessboard-height']}x{CONFIG['chessboard-width']}) "
-            f"and size ({CONFIG['chessboard-size']}m) are correct, and the images are clear."
-        )
     LOGGER.info(
         f"{len(detected_corners)}/{len(images)} images with detected corners.\n"
     )
@@ -87,7 +89,7 @@ if __name__ == "__main__":
             convert_from_matrix=False,
         )
     )
-    if CONFIG["verbose"]:
+    if verbose:
         LOGGER.info("Projecting target poses to camera images...")
         output_folder = f"{data_folder}/visualization"
         if not os.path.exists(output_folder):
@@ -118,11 +120,13 @@ if __name__ == "__main__":
         )
         LOGGER.info("\n")
         viser_server.stop()
-    # TODO
-    # Add typing everywhere
-    # Record test dataset
-    # Add demo video
-    # File standard for camera poses (ORDER MATTERS)
-    # File standard for calibration results
-    # Readme
-    # Replace logger.infos with logging
+
+
+if __name__ == "__main__":
+    main(
+        CONFIG["data-folder"],
+        CONFIG["chessboard-height"],
+        CONFIG["chessboard-width"],
+        CONFIG["chessboard-size"],
+        CONFIG["verbose"],
+    )
