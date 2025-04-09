@@ -103,32 +103,26 @@ def viusalize_target_to_cam_poses_2D(
         ),
         total=len(images),
     ):
-        axes_3D = np.eye(3)
-        rotated_axes = rotation @ axes_3D.T
-        translated_axes = rotated_axes + translation.reshape(3, 1)
-        projected_axes, _ = cv2.projectPoints(
-            translated_axes.T,
-            np.zeros(3),
-            np.zeros(3),
-            intrinsics_matrix,
-            distCoeffs=camera_parameters.distortion_coeffs,
-        )
-        projected_axes = projected_axes.reshape(-1, 2).astype(int)
-        projected_origin, _ = cv2.projectPoints(
-            translation, np.zeros(3), np.zeros(3), intrinsics_matrix, None
-        )
-        projected_origin = projected_origin.reshape(-1, 2).astype(int)[0]
-        lengths = np.linalg.norm(projected_axes - projected_origin, axis=1)
-        projected_axes = (
-            projected_origin
-            + (projected_axes - projected_origin) / lengths[:, None] * 50
-        )
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]  # X (red), Y (green), Z (blue)
-        for i, color in enumerate(colors):
+        origin = np.array([[0, 0, 0]]).T
+        x_axis = np.array([[1, 0, 0]]).T
+        y_axis = np.array([[0, 1, 0]]).T
+        z_axis = np.array([[0, 0, 1]]).T
+
+        translation = translation.reshape(3, 1)
+        world_points = np.hstack((origin, x_axis, y_axis, z_axis))
+        camera_points = np.dot(rotation, world_points) + translation
+
+        image_points = np.dot(intrinsics_matrix, camera_points)
+        image_points /= image_points[2, :]
+
+        image_points_2D = image_points[:2, :].T
+        cv2.circle(image, tuple(image_points_2D[0].astype(int)), 5, (0, 0, 255), -1)
+
+        for i, color in enumerate([(255, 0, 0), (0, 255, 0), (0, 0, 255)]):
             cv2.line(
                 image,
-                tuple(projected_origin.astype(np.int32)),
-                tuple(projected_axes[i].astype(np.int32)),
+                tuple(image_points_2D[0].astype(int)),
+                tuple(image_points_2D[i + 1].astype(int)),
                 color,
                 2,
             )
