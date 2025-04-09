@@ -1,6 +1,7 @@
 # YACHT: Yet Another Camera Hand calibration Tool
 
 ## Running the script
+- ROS not required
 - Install dependencies:
   ```
   pip install -r requirements.txt
