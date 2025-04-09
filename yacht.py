@@ -123,6 +123,18 @@ def main() -> None:
         LOGGER.info("\n")
         viser_server.stop()
 
+    LOGGER.info(f"Saving result to {CONFIG['data-folder']}/result.npy...")
+    cam_to_arm_pose_T = np.eye(4)
+    cam_to_arm_pose_T[:3, :3] = hand_eye_calibration_result.cam_to_arm_rotation
+    cam_to_arm_pose_T[:3, 3] = hand_eye_calibration_result.cam_to_arm_translation
+    result = {
+        "cam_to_arm_pose": cam_to_arm_pose_T,
+        "camera_matrix": camera_parameters.intrinsics,
+        "distortion_coefficients": camera_parameters.distortion_coeffs,
+    }
+    np.save(f"{CONFIG['data-folder']}/result.npy", result)
+    LOGGER.info("finished.")
+
 
 if __name__ == "__main__":
     main()

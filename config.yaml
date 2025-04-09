@@ -1,6 +1,6 @@
-data-folder: data_prev
+data-folder: example_data
 chessboard-size: 28.5 # mm
 chessboard-height: 6
 chessboard-width: 8
-visualize-2D: false # project 2D target frames to images and save
+visualize-2D: true # project 2D target frames to images and save
 visualize-3D: true # plot 3D frames in viser
