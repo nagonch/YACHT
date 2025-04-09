@@ -2,7 +2,7 @@
 
 There's lots of "I've got a code for calibrating arm to camera, I can share if you want". Well, I'll just mine the way I did it.
 
-![Yacht](yacht.jpg)
+![Yacht](imgs/yacht.jpg)
 
 ## Running the script
 - Install dependencies:
@@ -33,8 +33,10 @@ There's lots of "I've got a code for calibrating arm to camera, I can share if y
 
 - With `visualize-3D`:
   - First view — camera poses w.r.t. target
+  ![View2](imgs/view1.jpg)
 
   - Second view — camera, arm, target poses in global frame. Target frames (frames in front of cameras) should cluster tightly. If spread out — error is high, add more diverse data
+  ![View2](imgs/view2.jpg)
 
 ## Example dataset
 Located in `example_dataset` folder, provided by the US Department of Agriculture ([link](https://catalog.data.gov/dataset/data-from-solving-the-robot-world-hand-eyes-calibration-problem-with-iterative-methods-02035))
