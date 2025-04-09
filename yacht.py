@@ -24,11 +24,11 @@ def main() -> None:
         f"{CONFIG['data-folder']}/images"
     ), f"Images folder '{CONFIG['data-folder']}/images' does not exist."
     assert os.path.exists(
-        f"{CONFIG['data-folder']}/poses.txt"
-    ), f"Poses file '{CONFIG['data-folder']}/poses.txt' not found"
+        f"{CONFIG['data-folder']}/poses.npy"
+    ), f"Poses file '{CONFIG['data-folder']}/poses.npy' not found"
 
     # Load poses
-    arm_poses = np.loadtxt(f"{CONFIG['data-folder']}/poses.txt").reshape(-1, 4, 4)
+    arm_poses = np.load(f"{CONFIG['data-folder']}/poses.npy")
     arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
 
