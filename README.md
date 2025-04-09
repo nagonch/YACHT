@@ -30,10 +30,10 @@
 
 - With `visualize-3D`:
   - First view — camera poses w.r.t. target
-  <img src="imgs/view1.png" width="500" />
+  <img src="imgs/view1.png" width="800" />
 
   - Second view — camera, arm, target poses in global frame. Target frames (frames in front of cameras) should cluster tightly. If spread out — error is high, add more diverse data
-  <img src="imgs/view2.png" width="500" />
+  <img src="imgs/view2.png" width="800" />
 
 ## Example dataset
 Located in `example_dataset` folder, provided by the US Department of Agriculture ([link](https://catalog.data.gov/dataset/data-from-solving-the-robot-world-hand-eyes-calibration-problem-with-iterative-methods-02035))
