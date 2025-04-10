@@ -11,10 +11,9 @@ def detect_corners(
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
-    corners3D = np.zeros((chessboard_dims[0] * chessboard_dims[1], 3), dtype=np.float32)
-    corners_2D = np.meshgrid(
-        np.arange(chessboard_dims[0]), np.arange(chessboard_dims[1])
-    )
+    chessboard_width, chessboard_height = chessboard_dims
+    corners3D = np.zeros((chessboard_width * chessboard_height, 3), dtype=np.float32)
+    corners_2D = np.meshgrid(np.arange(chessboard_width), np.arange(chessboard_height))
     corners_2D = np.stack(corners_2D, axis=-1).reshape(-1, 2)
     corners3D[:, :2] = corners_2D * chessboard_size
     detected_images = []
@@ -23,7 +22,8 @@ def detect_corners(
     for i, image in enumerate(tqdm(images)):
         grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         is_detected, corners = cv2.findChessboardCorners(
-            grayscale_image, chessboard_dims
+            grayscale_image,
+            (chessboard_width, chessboard_height),
         )
         if is_detected:
             corners = cv2.cornerSubPix(

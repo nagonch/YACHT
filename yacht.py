@@ -43,7 +43,7 @@ def main() -> None:
     LOGGER.info("Detecting corners...")
     detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
-        chessboard_dims=(CONFIG["chessboard-height"], CONFIG["chessboard-width"]),
+        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
         chessboard_size=CONFIG["chessboard-size"] * 1e-3,
     )
     LOGGER.info("done.")
