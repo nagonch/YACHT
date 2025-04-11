@@ -30,7 +30,7 @@ def pose_pretty_string(
         rotation = R.from_matrix(rotation).as_euler("xyz", degrees=True)
     result = f"Tra: x: {translation[0]:.3f} m, y: {translation[1]:.3f} m, z: {translation[2]:.3f} m\n"
     result += (
-        f"Rot: x: {rotation[0]:.3f}°, y: {rotation[1]:.3f}°, z: {rotation[2]:.3f}°\n"
+        f"Rot: x: {rotation[0]:.5f}°, y: {rotation[1]:.5f}°, z: {rotation[2]:.5f}°\n"
     )
     return result
 
@@ -38,26 +38,21 @@ def pose_pretty_string(
 def estimate_hand_eye_error(calib_result: HandEyeCalibrationResult) -> Tuple[NDArray]:
     target_to_base_rotations = calib_result.target_to_base_rotation
     target_to_base_translations = calib_result.target_to_base_translation
-    mean_target_coord = target_to_base_translations.mean(axis=0)
-    mean_target_rotation_quat = (
+
+    R_ref = R.from_quat(
         R.from_matrix(target_to_base_rotations).as_quat().mean(axis=0)
-    )
-    mean_target_rotation = R.from_quat(mean_target_rotation_quat).as_matrix()
-    mean_rotation_error_quat = (
-        R.from_matrix(
-            mean_target_rotation @ target_to_base_rotations.transpose(0, 2, 1)
-        )
-        .as_quat()
-        .mean(axis=0)
-    )
-    mean_rotation_error = R.from_quat(mean_rotation_error_quat).as_euler(
-        "xyz", degrees=True
-    )
-    mean_translation_error = np.linalg.norm(
-        (target_to_base_translations - mean_target_coord) ** 2,
-        axis=0,
-    )
-    return mean_rotation_error, mean_translation_error
+    ).as_matrix()
+    R_rel = R_ref.T @ target_to_base_rotations
+    theta_min = np.arccos((np.trace(R_rel, axis1=1, axis2=2) - 1) / 2)
+    theta_min = np.nan_to_num(theta_min)
+    rotation_error = np.rad2deg(theta_min.mean())
+
+    t_ref = target_to_base_translations.mean(axis=0)
+    translation_error = np.linalg.norm(
+        target_to_base_translations - t_ref, axis=1
+    ).std()
+
+    return rotation_error, translation_error
 
 
 if __name__ == "__main__":

@@ -79,12 +79,12 @@ def main() -> None:
             hand_eye_calibration_result.cam_to_arm_translation,
         )
     )
-    LOGGER.info("Cam to arm error (target to base uncertainty):")
+    rotation_error, translation_error = estimate_hand_eye_error(
+        hand_eye_calibration_result
+    )
+    LOGGER.info(f"Cam to arm rotation error (target std): {rotation_error:.3f}°")
     LOGGER.info(
-        pose_pretty_string(
-            *estimate_hand_eye_error(hand_eye_calibration_result),
-            convert_from_matrix=False,
-        )
+        f"Cam to arm translation error (target std): {translation_error*1000:.3f} mm"
     )
 
     if CONFIG["visualize-2D"]:

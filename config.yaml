@@ -1,6 +1,6 @@
-data-folder: calibration
+data-folder: calibration-fxd
 chessboard-size: 20 # mm
 chessboard-height: 7
 chessboard-width: 12
 visualize-2D: false # project 2D target frames to images and save
-visualize-3D: true # plot 3D frames in viser
+visualize-3D: false # plot 3D frames in viser
