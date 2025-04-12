@@ -39,6 +39,9 @@
 ## Example dataset
 Located in `example_dataset` folder, provided by the US Department of Agriculture ([link](https://catalog.data.gov/dataset/data-from-solving-the-robot-world-hand-eyes-calibration-problem-with-iterative-methods-02035))
 
+## TODO
+- [ ] A dataset with low error
+
 ## Author's note
 Made by [Nikolai Goncharov](https://www.linkedin.com/in/nikolai-goncharov-2931a31a5/). There's lots of "I've got a code for calibrating arm to camera, I can share if you want". Well, I just shared mine the way I did it.
 
