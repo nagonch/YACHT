@@ -9,9 +9,9 @@ from visualize import (
 )
 from utils import pose_pretty_string, estimate_hand_eye_error, CONFIG, LOGGER
 from opencv_functions import (
-    detect_corners,
     get_camera_parameters,
     get_eye_to_hand_transformation,
+    get_camera_extrinsics,
 )
 
 
@@ -35,34 +35,37 @@ def main() -> None:
     arm_to_base_rotation = arm_poses[:, :3, :3]
 
     # Load images
-    image_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
-    images = [
-        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
-        for image_fname in image_filenames
+    cam_calib_filenames = sorted(os.listdir(CAM_CAL_IMAGES_FOLDER))
+    cam_calib_images = [
+        np.array(Image.open(f"{CAM_CAL_IMAGES_FOLDER}/{image_fname}"))
+        for image_fname in cam_calib_filenames
     ]
-
-    # Detect corners
-    LOGGER.info("Detecting corners...")
-    detected_inds, detected_corners, corners3D, detected_images = detect_corners(
-        images,
-        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-        chessboard_size=CONFIG["chessboard-size"] * 1e-3,
-    )
-    LOGGER.info("done.")
-    assert (
-        len(detected_corners) > 0
-    ), f"No corners sized {CONFIG['chessboard-size']:.1f} mm of a {CONFIG['chessboard-height']} x {CONFIG['chessboard-width']} board detected in images. "
-
-    LOGGER.info(
-        f"{len(detected_corners)}/{len(images)} images with detected corners.\n"
-    )
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
     camera_parameters = get_camera_parameters(
-        detected_corners, corners3D, detected_images
+        cam_calib_images,
+        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+        chessboard_size=CONFIG["chessboard-size"] * 1e-3,
     )
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error}\n")
+
+    arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
+    arm_calib_images = [
+        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
+        for image_fname in arm_calib_filenames
+    ]
+
+    LOGGER.info("Geting cam extrinsics...")
+    camera_parameters, detected_inds, detected_images, detected_corners = (
+        get_camera_extrinsics(
+            arm_calib_images,
+            camera_parameters,
+            chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+            chessboard_size=CONFIG["chessboard-size"] * 1e-3,
+        )
+    )
+    LOGGER.info("done.")
 
     arm_to_base_translation = arm_to_base_translation[detected_inds]
     arm_to_base_rotation = arm_to_base_rotation[detected_inds]

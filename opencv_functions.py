@@ -4,6 +4,7 @@ from typing import List, Tuple
 from numpy.typing import NDArray
 from tqdm import tqdm
 from structs import CameraParameters, HandEyeCalibrationResult
+from utils import LOGGER
 
 
 def detect_corners(
@@ -49,10 +50,22 @@ def detect_corners(
 
 
 def get_camera_parameters(
-    detected_corners: List[NDArray],
-    corners3D: List[NDArray],
-    detected_images: List[NDArray],
+    images: List[NDArray],
+    chessboard_size: float = 28.5e-3,
+    chessboard_dims: Tuple[int] = (6, 8),
 ) -> CameraParameters:
+    _, detected_corners, corners3D, detected_images = detect_corners(
+        images,
+        chessboard_dims=chessboard_dims,
+        chessboard_size=chessboard_size * 1e-3,
+    )
+    assert (
+        len(detected_corners) > 0
+    ), f"No corners sized {chessboard_size:.1f} mm of a {chessboard_dims[0]} x {chessboard_dims[1]} board detected in cam cal images. "
+
+    LOGGER.info(
+        f"{len(detected_corners)}/{len(images)} cam cal images with detected corners.\n"
+    )
     n_images = len(detected_images)
     height, width = detected_images[0].shape[:2]
     cam_calib_params = cv2.calibrateCamera(
@@ -77,6 +90,42 @@ def get_camera_parameters(
     cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
 
     return cam_calib_params
+
+
+def get_camera_extrinsics(
+    images: List[NDArray],
+    camera_parameters: CameraParameters,
+    chessboard_size: float = 28.5e-3,
+    chessboard_dims: Tuple[int] = (6, 8),
+):
+    detected_inds, detected_corners, corners3D, detected_images = detect_corners(
+        images,
+        chessboard_dims=chessboard_dims,
+        chessboard_size=chessboard_size * 1e-3,
+    )
+    assert (
+        len(detected_corners) > 0
+    ), f"No corners sized {chessboard_size:.1f} mm of a {chessboard_dims[0]} x {chessboard_dims[1]} board detected in arm cal images. "
+
+    LOGGER.info(
+        f"{len(detected_corners)}/{len(images)} arm cal images with detected corners.\n"
+    )
+    rotations = []
+    translations = []
+    for corners in detected_corners:
+        _, rvec, tvec = cv2.solvePnP(
+            corners3D,
+            corners,
+            camera_parameters.intrinsics,
+            camera_parameters.distortion_coeffs,
+        )
+        rotations.append(cv2.Rodrigues(rvec)[0])
+        translations.append(tvec.reshape(-1))
+    rotations = np.stack(rotations)
+    translations = np.stack(translations)
+    camera_parameters.target_to_cam_rotation = rotations
+    camera_parameters.target_to_cam_translation = translations
+    return camera_parameters, detected_inds, detected_images, detected_corners
 
 
 def get_eye_to_hand_transformation(
