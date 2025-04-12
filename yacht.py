@@ -17,25 +17,27 @@ from opencv_functions import (
 
 def main() -> None:
     # Check folder structure
+    DATA_FOLDER = CONFIG["data-folder"]
+    CAM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/cam_cal"
+    ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/arm_cal"
+    POSES_FILE = f"{DATA_FOLDER}/arm_poses.npy"
     assert os.path.exists(
-        CONFIG["data-folder"]
-    ), f"Data folder '{CONFIG['data-folder']}' does not exist."
+        CAM_CAL_IMAGES_FOLDER
+    ), f"Cam cal images folder {CAM_CAL_IMAGES_FOLDER} does not exist."
     assert os.path.exists(
-        f"{CONFIG['data-folder']}/images"
-    ), f"Images folder '{CONFIG['data-folder']}/images' does not exist."
-    assert os.path.exists(
-        f"{CONFIG['data-folder']}/poses.npy"
-    ), f"Poses file '{CONFIG['data-folder']}/poses.npy' not found"
+        ARM_CAL_IMAGES_FOLDER
+    ), f"Arm cal images folder {ARM_CAL_IMAGES_FOLDER} does not exist."
+    assert os.path.exists(POSES_FILE), f"Poses file {POSES_FILE} not found"
 
     # Load poses
-    arm_poses = np.load(f"{CONFIG['data-folder']}/poses.npy")
+    arm_poses = np.load(POSES_FILE)
     arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
 
     # Load images
-    image_filenames = sorted(os.listdir(f"{CONFIG['data-folder']}/images"))
+    image_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
     images = [
-        np.array(Image.open(f"{CONFIG['data-folder']}/images/{image_fname}"))
+        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
         for image_fname in image_filenames
     ]
 
