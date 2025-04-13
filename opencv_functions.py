@@ -54,6 +54,7 @@ def get_camera_parameters(
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
 ) -> CameraParameters:
+    print(chessboard_size)
     _, detected_corners, corners3D, detected_images = detect_corners(
         images,
         chessboard_dims=chessboard_dims,

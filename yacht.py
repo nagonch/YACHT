@@ -46,7 +46,7 @@ def main() -> None:
     camera_parameters = get_camera_parameters(
         cam_calib_images,
         chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-        chessboard_size=CONFIG["chessboard-size"] * 1e-3,
+        chessboard_size=CONFIG["chessboard-size"],
     )
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error}\n")
 
@@ -62,7 +62,7 @@ def main() -> None:
             arm_calib_images,
             camera_parameters,
             chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-            chessboard_size=CONFIG["chessboard-size"] * 1e-3,
+            chessboard_size=CONFIG["chessboard-size"],
         )
     )
     LOGGER.info("done.")
