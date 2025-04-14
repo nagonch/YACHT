@@ -134,14 +134,15 @@ def viusalize_target_to_cam_poses_2D(
             s=image.shape[0] / 100,
             color="yellow",
         )
-        plt.text(
-            50,
-            50,
-            f"{camera_parameters.rms_error[pose_i]}",
-            color="white",
-            fontsize=12,
-            weight="bold",
-        )
+        if len(images) == len(camera_parameters.rms_error):
+            plt.text(
+                50,
+                50,
+                f"{camera_parameters.rms_error[pose_i]}",
+                color="white",
+                fontsize=12,
+                weight="bold",
+            )
         plt.axis("off")
         plt.tight_layout(pad=0)
         plt.savefig(f"{output_folder}/{str(pose_i).zfill(4)}.png")
