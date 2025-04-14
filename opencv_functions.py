@@ -176,5 +176,52 @@ def get_eye_to_hand_transformation(
     return result
 
 
+def get_robot_world_transformation(
+    arm_to_base_rotation: NDArray,
+    arm_to_base_translation: NDArray,
+    camera_parameters: CameraParameters,
+) -> HandEyeCalibrationResult:
+    target_to_cam_rotation = camera_parameters.target_to_cam_rotation
+    target_to_cam_translation = camera_parameters.target_to_cam_translation
+    base_to_arm_rotation = np.transpose(arm_to_base_rotation, (0, 2, 1))
+    base_to_arm_translation = -np.matvec(base_to_arm_rotation, arm_to_base_translation)
+
+    (
+        base_to_target_rotation,
+        base_to_target_translation,
+        arm_to_cam_rotation,
+        arm_to_cam_translation,
+    ) = cv2.calibrateRobotWorldHandEye(
+        target_to_cam_rotation,
+        target_to_cam_translation,
+        base_to_arm_rotation,
+        base_to_arm_translation,
+    )
+    cam_to_arm_rotation = arm_to_cam_rotation.T
+    cam_to_arm_translation = -cam_to_arm_rotation @ arm_to_cam_translation.reshape(-3)
+    cam_to_arm_translation = cam_to_arm_translation.reshape(-1)
+    cam_to_base_rotation = arm_to_base_rotation @ cam_to_arm_rotation
+    cam_to_base_translation = arm_to_base_translation + np.matvec(
+        arm_to_base_rotation, cam_to_arm_translation
+    )
+    target_to_base_rotation = (
+        cam_to_base_rotation @ camera_parameters.target_to_cam_rotation
+    )
+    target_to_base_translation = cam_to_base_translation + np.matvec(
+        cam_to_base_rotation, camera_parameters.target_to_cam_translation
+    )
+    result = HandEyeCalibrationResult(
+        arm_to_base_rotation,
+        arm_to_base_translation,
+        cam_to_arm_rotation,
+        cam_to_arm_translation,
+        cam_to_base_rotation,
+        cam_to_base_translation,
+        target_to_base_rotation,
+        target_to_base_translation,
+    )
+    return result
+
+
 if __name__ == "__main__":
     pass
