@@ -48,7 +48,7 @@ def main() -> None:
         chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
-    LOGGER.info(f"done. RMS error: {camera_parameters.rms_error}\n")
+    LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
