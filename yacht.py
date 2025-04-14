@@ -43,12 +43,22 @@ def main() -> None:
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
-    camera_parameters = get_camera_parameters(
+    detected_images, detected_corners, camera_parameters = get_camera_parameters(
         cam_calib_images,
         chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
         chessboard_size=CONFIG["chessboard-size"],
     )
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error}\n")
+
+    if CONFIG["visualize-2D"]:
+        LOGGER.info("Projecting target poses to camera images...")
+        output_folder = f"{CONFIG['data-folder']}/cam_cal_visualization"
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+        viusalize_target_to_cam_poses_2D(
+            detected_images, camera_parameters, detected_corners, output_folder
+        )
+        LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
     arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
     arm_calib_images = [
@@ -94,7 +104,7 @@ def main() -> None:
 
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
-        output_folder = f"{CONFIG['data-folder']}/visualization"
+        output_folder = f"{CONFIG['data-folder']}/arm_cal_visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(

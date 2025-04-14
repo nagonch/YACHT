@@ -54,7 +54,6 @@ def get_camera_parameters(
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
 ) -> CameraParameters:
-    print(chessboard_size)
     _, detected_corners, corners3D, detected_images = detect_corners(
         images,
         chessboard_dims=chessboard_dims,
@@ -90,7 +89,7 @@ def get_camera_parameters(
     )[:, :, 0]
     cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
 
-    return cam_calib_params
+    return detected_images, detected_corners, cam_calib_params
 
 
 def get_camera_extrinsics(
