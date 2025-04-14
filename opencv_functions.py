@@ -88,7 +88,20 @@ def get_camera_parameters(
         cam_calib_params.target_to_cam_translation
     )[:, :, 0]
     cam_calib_params.distortion_coeffs = cam_calib_params.distortion_coeffs[0]
-
+    errors = []
+    for i, detected_corner in enumerate(detected_corners):
+        projected_corners, _ = cv2.projectPoints(
+            corners3D,
+            cv2.Rodrigues(cam_calib_params.target_to_cam_rotation[i])[0],
+            cam_calib_params.target_to_cam_translation[i].reshape(3, -1),
+            cam_calib_params.intrinsics,
+            cam_calib_params.distortion_coeffs,
+        )
+        projected_corners = projected_corners[:, 0, :]
+        error = np.sum((detected_corner - projected_corners) ** 2, axis=1)
+        error = np.sqrt(error.mean())
+        errors.append(error)
+    cam_calib_params.rms_error = np.array(errors)
     return detected_images, detected_corners, cam_calib_params
 
 

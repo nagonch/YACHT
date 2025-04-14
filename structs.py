@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class CameraParameters:
-    rms_error: float
+    rms_error: NDArray  # [n_img,]
     intrinsics: NDArray  # [3, 3]
     distortion_coeffs: NDArray  # [5]
     target_to_cam_rotation: NDArray  # [N, 3, 3]
