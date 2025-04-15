@@ -130,7 +130,7 @@ def viusalize_target_to_cam_poses_2D(
             cv2.circle(
                 image,
                 (int(round(corner[0])), int(round(corner[1]))),
-                radius=5,
+                radius=2,
                 color=(255, 255, 0),
                 thickness=-1,
             )
