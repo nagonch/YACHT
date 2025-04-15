@@ -84,6 +84,7 @@ def visualize_geometry(
 
 def viusalize_target_to_cam_poses_2D(
     images: List[NDArray],
+    points_3D: NDArray,
     camera_parameters: CameraParameters,
     detected_corners: List[NDArray],
     output_folder: str,
@@ -116,6 +117,11 @@ def viusalize_target_to_cam_poses_2D(
         image_points /= image_points[2, :]
 
         image_points_2D = image_points[:2, :].T
+
+        projected_corners = np.dot(rotation, points_3D.T) + translation
+        projected_corners = np.dot(intrinsics_matrix, projected_corners)
+        projected_corners /= projected_corners[2, :]
+        projected_corners = projected_corners[:2, :].T
         cv2.circle(image, tuple(image_points_2D[0].astype(int)), 5, (0, 0, 255), -1)
 
         for i, color in enumerate([(255, 0, 0), (0, 255, 0), (0, 0, 255)]):
@@ -126,7 +132,7 @@ def viusalize_target_to_cam_poses_2D(
                 color,
                 2,
             )
-        for corner in detected_corners_i:
+        for corner in projected_corners:
             cv2.circle(
                 image,
                 (int(round(corner[0])), int(round(corner[1]))),

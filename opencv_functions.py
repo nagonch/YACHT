@@ -102,7 +102,7 @@ def get_camera_parameters(
         error = np.sqrt(error.mean())
         errors.append(error)
     cam_calib_params.rms_error = np.array(errors)
-    return detected_images, detected_corners, cam_calib_params
+    return detected_images, detected_corners, cam_calib_params, corners3D
 
 
 def get_camera_extrinsics(

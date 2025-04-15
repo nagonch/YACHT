@@ -45,10 +45,12 @@ def main() -> None:
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
-    detected_images, detected_corners, camera_parameters = get_camera_parameters(
-        cam_calib_images,
-        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-        chessboard_size=CONFIG["chessboard-size"],
+    detected_images, detected_corners, camera_parameters, corners3D = (
+        get_camera_parameters(
+            cam_calib_images,
+            chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+            chessboard_size=CONFIG["chessboard-size"],
+        )
     )
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
@@ -58,7 +60,11 @@ def main() -> None:
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, output_folder
+            detected_images,
+            corners3D,
+            camera_parameters,
+            detected_corners,
+            output_folder,
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
@@ -120,7 +126,11 @@ def main() -> None:
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, output_folder
+            detected_images,
+            corners3D,
+            camera_parameters,
+            detected_corners,
+            output_folder,
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
