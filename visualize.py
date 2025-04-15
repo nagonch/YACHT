@@ -126,14 +126,16 @@ def viusalize_target_to_cam_poses_2D(
                 color,
                 2,
             )
+        for corner in detected_corners_i:
+            cv2.circle(
+                image,
+                (int(round(corner[0])), int(round(corner[1]))),
+                radius=5,
+                color=(255, 255, 0),
+                thickness=-1,
+            )
 
         plt.imshow(image)
-        plt.scatter(
-            detected_corners_i[:, 0],
-            detected_corners_i[:, 1],
-            s=image.shape[0] / 100,
-            color="yellow",
-        )
         if len(images) == len(camera_parameters.rms_error):
             plt.text(
                 50,
