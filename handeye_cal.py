@@ -6,6 +6,21 @@ from scipy.spatial.transform import Rotation as R
 # Camera to arm transform
 
 
+def get_poses_error(lhs_poses_T, rhs_poses_T, lambd=1.0):
+    trans_error = (
+        np.linalg.norm(lhs_poses_T[:, :3, 3] - rhs_poses_T[:, :3, 3], axis=1) ** 2
+    )
+    rot_error = (
+        1
+        - (
+            R.from_matrix(lhs_poses_T[:, :3, :3]).as_quat()
+            * R.from_matrix(rhs_poses_T[:, :3, :3]).as_quat()
+        ).sum(axis=1)
+        ** 2
+    )
+    return trans_error + lambd * rot_error
+
+
 def get_loss(
     x,
     arm_to_base_rotation,
@@ -39,6 +54,15 @@ def get_loss(
     )
     target_to_cam_T[:, :3, :3] = target_to_cam_rotation
     target_to_cam_T[:, :3, -1] = target_to_cam_translation
+
+    target_to_base_derived_T = arm_to_base_T @ cam_to_arm_T @ target_to_cam_T
+    target_to_base_pred_T = np.stack(
+        [
+            target_to_base_T,
+        ]
+        * target_to_base_derived_T.shape[0]
+    )
+    return get_poses_error(target_to_base_derived_T, target_to_base_pred_T)
 
 
 if __name__ == "__main__":
