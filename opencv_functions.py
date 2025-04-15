@@ -141,6 +141,17 @@ def get_camera_extrinsics(
     return camera_parameters, detected_inds, detected_images, detected_corners
 
 
+def undistort_images(detected_images, camera_parameters):
+    result_images = []
+    for image in detected_images:
+        result_images.append(
+            cv2.undistort(
+                image, camera_parameters.intrinsics, camera_parameters.distortion_coeffs
+            )
+        )
+    return result_images
+
+
 def get_eye_to_hand_transformation(
     arm_to_base_rotation: NDArray,
     arm_to_base_translation: NDArray,

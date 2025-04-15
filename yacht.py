@@ -12,6 +12,7 @@ from opencv_functions import (
     get_camera_parameters,
     get_eye_to_hand_transformation,
     get_camera_extrinsics,
+    undistort_images,
 )
 from handeye_cal import get_cam_to_arm
 import cv2
@@ -36,12 +37,18 @@ def main() -> None:
     arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
 
+    arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
+    arm_calib_images = [
+        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
+        for image_fname in arm_calib_filenames
+    ]
+
     # Load images
     cam_calib_filenames = sorted(os.listdir(CAM_CAL_IMAGES_FOLDER))
     cam_calib_images = [
         np.array(Image.open(f"{CAM_CAL_IMAGES_FOLDER}/{image_fname}"))
         for image_fname in cam_calib_filenames
-    ]
+    ] + arm_calib_images
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
@@ -52,6 +59,7 @@ def main() -> None:
             chessboard_size=CONFIG["chessboard-size"],
         )
     )
+    detected_images = undistort_images(detected_images, camera_parameters)
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
     if CONFIG["visualize-2D"]:
@@ -67,12 +75,6 @@ def main() -> None:
             output_folder,
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
-
-    arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
-    arm_calib_images = [
-        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
-        for image_fname in arm_calib_filenames
-    ]
 
     LOGGER.info("Geting cam extrinsics...")
     camera_parameters, detected_inds, detected_images, detected_corners = (
