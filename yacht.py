@@ -13,6 +13,7 @@ from opencv_functions import (
     get_eye_to_hand_transformation,
     get_camera_extrinsics,
 )
+from handeye_cal import get_cam_to_arm
 
 
 def main() -> None:
@@ -82,7 +83,7 @@ def main() -> None:
 
     # Camera to arm calibration
     LOGGER.info("Calibrating hand-eye transformation... ")
-    hand_eye_calibration_result = get_eye_to_hand_transformation(
+    hand_eye_calibration_result = get_cam_to_arm(
         arm_to_base_rotation, arm_to_base_translation, camera_parameters
     )
     LOGGER.info("done.")

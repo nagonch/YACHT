@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from scipy.optimize import least_squares
+from structs import HandEyeCalibrationResult
 
 # Extimate:
 # Target to base transform
@@ -67,6 +68,50 @@ def get_loss(
     result_loss = get_poses_error(target_to_base_derived_T, target_to_base_pred_T)
     result_loss += lambd_reg * np.linalg.norm(cam_to_arm_pose[:3])
     return result_loss
+
+
+def get_cam_to_arm(arm_to_base_rotation, arm_to_base_translation, camera_params):
+    target_to_base_pose = np.array([0, 0, 0, 0, 0, 0, 1])
+    cam_to_arm_pose = np.array([0, 0, 0, 0, 0, 0, 1])
+    x = np.concatenate((target_to_base_pose, cam_to_arm_pose))
+    result = least_squares(
+        get_loss,
+        x,
+        args=(
+            arm_to_base_rotation,
+            arm_to_base_translation,
+            camera_params.target_to_cam_rotation,
+            camera_params.target_to_cam_translation,
+        ),
+    )
+    x_opt = result.x
+    target_to_base_pose = x_opt[:7]
+    cam_to_arm_pose = x_opt[7:]
+    cam_to_arm_rotation = R.from_quat(cam_to_arm_pose[3:]).as_matrix()
+    cam_to_arm_translation = cam_to_arm_pose[:3]
+
+    cam_to_base_rotation = arm_to_base_rotation @ cam_to_arm_rotation
+    cam_to_base_translation = arm_to_base_translation + np.matvec(
+        arm_to_base_rotation, cam_to_arm_translation
+    )
+    target_to_base_rotation = (
+        cam_to_base_rotation @ camera_params.target_to_cam_rotation
+    )
+    target_to_base_translation = cam_to_base_translation + np.matvec(
+        cam_to_base_rotation, camera_params.target_to_cam_translation
+    )
+
+    result = HandEyeCalibrationResult(
+        arm_to_base_rotation,
+        arm_to_base_translation,
+        cam_to_arm_rotation,
+        cam_to_arm_translation,
+        cam_to_base_rotation,
+        cam_to_base_translation,
+        target_to_base_rotation,
+        target_to_base_translation,
+    )
+    return result
 
 
 if __name__ == "__main__":
