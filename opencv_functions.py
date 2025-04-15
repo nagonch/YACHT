@@ -145,12 +145,14 @@ def get_eye_to_hand_transformation(
     arm_to_base_rotation: NDArray,
     arm_to_base_translation: NDArray,
     camera_parameters: CameraParameters,
+    method=cv2.CALIB_HAND_EYE_TSAI,
 ) -> HandEyeCalibrationResult:
     cam_to_arm_rotation, cam_to_arm_translation = cv2.calibrateHandEye(
         arm_to_base_rotation,
         arm_to_base_translation,
         camera_parameters.target_to_cam_rotation,
         camera_parameters.target_to_cam_translation,
+        method=method,
     )
     cam_to_arm_translation = cam_to_arm_translation.reshape(-1)
     cam_to_base_rotation = arm_to_base_rotation @ cam_to_arm_rotation
