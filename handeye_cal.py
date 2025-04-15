@@ -83,9 +83,7 @@ if __name__ == "__main__":
             target_to_cam_rotation,
             target_to_cam_translation,
         ),
-        ftol=1e-9,
     )
-    print(result)
     x_opt = result.x
     target_to_base_pose = x_opt[:7]
     cam_to_arm_pose = x_opt[7:]
@@ -96,3 +94,4 @@ if __name__ == "__main__":
     cam_to_arm_T = np.eye(4)
     cam_to_arm_T[:3, :3] = R.from_quat(cam_to_arm_pose[3:]).as_matrix()
     cam_to_arm_T[:3, 3] = cam_to_arm_pose[:3]
+    print(cam_to_arm_T)
