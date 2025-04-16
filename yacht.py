@@ -56,7 +56,7 @@ def main() -> None:
     cam_calib_images = [
         np.array(Image.open(f"{CAM_CAL_IMAGES_FOLDER}/{image_fname}"))
         for image_fname in cam_calib_filenames
-    ] + arm_calib_images
+    ]
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
@@ -67,7 +67,7 @@ def main() -> None:
             chessboard_size=CONFIG["chessboard-size"],
         )
     )
-    detected_images = undistort_images(detected_images, camera_parameters)
+
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
     if CONFIG["visualize-2D"]:
@@ -93,6 +93,7 @@ def main() -> None:
             chessboard_size=CONFIG["chessboard-size"],
         )
     )
+    detected_images = undistort_images(detected_images, camera_parameters)
     LOGGER.info("done.")
 
     arm_to_base_translation = arm_to_base_translation[detected_inds]
