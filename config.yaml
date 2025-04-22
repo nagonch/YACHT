@@ -1,7 +1,7 @@
-data-folder: calibration_sphere_joint
-chessboard-size: 20.0 # mm
+data-folder: calibration_precise
+chessboard-size: 12.0 # mm
 chessboard-height: 7
-chessboard-width: 12
+chessboard-width: 10
 visualize-2D: false # project 2D target frames to images and save
 visualize-3D: true # plot 3D frames in viser
-method: my_method # my_method, tsai or park
+method: tsai # my_method, tsai or park

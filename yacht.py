@@ -28,7 +28,7 @@ def main() -> None:
     DATA_FOLDER = CONFIG["data-folder"]
     CAM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/cam_cal"
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/arm_cal"
-    POSES_FILE = f"{DATA_FOLDER}/arm_poses.npy"
+    POSES_FILE = f"{DATA_FOLDER}/arm_poses_opencv.npy"
     assert os.path.exists(
         CAM_CAL_IMAGES_FOLDER
     ), f"Cam cal images folder {CAM_CAL_IMAGES_FOLDER} does not exist."
@@ -39,8 +39,8 @@ def main() -> None:
 
     # Load poses
     arm_poses = np.load(POSES_FILE)
-    arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
+    arm_to_base_translation = arm_poses[:, :3, 3]
 
     arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
     arm_calib_images = [
@@ -127,7 +127,6 @@ def main() -> None:
     LOGGER.info(
         f"Cam to arm translation error (target std): {translation_error*1000:.3f} mm"
     )
-
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
         output_folder = f"{CONFIG['data-folder']}/arm_cal_visualization"
