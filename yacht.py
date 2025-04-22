@@ -7,12 +7,20 @@ from visualize import (
     viusalize_target_to_cam_poses_3D,
     visualize_hand_eye_poses,
 )
-from utils import pose_pretty_string, estimate_hand_eye_error, CONFIG, LOGGER
+from utils import (
+    pose_pretty_string,
+    estimate_hand_eye_error,
+    CONFIG,
+    LOGGER,
+)
 from opencv_functions import (
     get_camera_parameters,
     get_eye_to_hand_transformation,
     get_camera_extrinsics,
+    undistort_images,
 )
+from handeye_cal import get_cam_to_arm
+import cv2
 
 
 def main() -> None:
@@ -20,7 +28,7 @@ def main() -> None:
     DATA_FOLDER = CONFIG["data-folder"]
     CAM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/cam_cal"
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/arm_cal"
-    POSES_FILE = f"{DATA_FOLDER}/arm_poses.npy"
+    POSES_FILE = f"{DATA_FOLDER}/arm_poses_opencv.npy"
     assert os.path.exists(
         CAM_CAL_IMAGES_FOLDER
     ), f"Cam cal images folder {CAM_CAL_IMAGES_FOLDER} does not exist."
@@ -31,8 +39,14 @@ def main() -> None:
 
     # Load poses
     arm_poses = np.load(POSES_FILE)
-    arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
+    arm_to_base_translation = arm_poses[:, :3, 3]
+
+    arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
+    arm_calib_images = [
+        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
+        for image_fname in arm_calib_filenames
+    ]
 
     # Load images
     cam_calib_filenames = sorted(os.listdir(CAM_CAL_IMAGES_FOLDER))
@@ -43,11 +57,14 @@ def main() -> None:
 
     # Camera calibration
     LOGGER.info("Calibrating camera...")
-    detected_images, detected_corners, camera_parameters = get_camera_parameters(
-        cam_calib_images,
-        chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-        chessboard_size=CONFIG["chessboard-size"],
+    detected_images, detected_corners, camera_parameters, corners3D = (
+        get_camera_parameters(
+            cam_calib_images,
+            chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
+            chessboard_size=CONFIG["chessboard-size"],
+        )
     )
+
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
     if CONFIG["visualize-2D"]:
@@ -56,15 +73,13 @@ def main() -> None:
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, output_folder
+            detected_images,
+            corners3D,
+            camera_parameters,
+            detected_corners,
+            output_folder,
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
-
-    arm_calib_filenames = sorted(os.listdir(ARM_CAL_IMAGES_FOLDER))
-    arm_calib_images = [
-        np.array(Image.open(f"{ARM_CAL_IMAGES_FOLDER}/{image_fname}"))
-        for image_fname in arm_calib_filenames
-    ]
 
     LOGGER.info("Geting cam extrinsics...")
     camera_parameters, detected_inds, detected_images, detected_corners = (
@@ -75,6 +90,7 @@ def main() -> None:
             chessboard_size=CONFIG["chessboard-size"],
         )
     )
+    detected_images = undistort_images(detected_images, camera_parameters)
     LOGGER.info("done.")
 
     arm_to_base_translation = arm_to_base_translation[detected_inds]
@@ -82,9 +98,19 @@ def main() -> None:
 
     # Camera to arm calibration
     LOGGER.info("Calibrating hand-eye transformation... ")
-    hand_eye_calibration_result = get_eye_to_hand_transformation(
-        arm_to_base_rotation, arm_to_base_translation, camera_parameters
-    )
+    if CONFIG["method"] == "my_method":
+        hand_eye_calibration_result = get_cam_to_arm(
+            arm_to_base_rotation, arm_to_base_translation, camera_parameters
+        )
+    else:
+        method = (
+            cv2.CALIB_HAND_EYE_TSAI
+            if CONFIG["method"].lower() == "tsai"
+            else cv2.CALIB_HAND_EYE_PARK
+        )
+        hand_eye_calibration_result = get_eye_to_hand_transformation(
+            arm_to_base_rotation, arm_to_base_translation, camera_parameters, method
+        )
     LOGGER.info("done.")
 
     LOGGER.info("Cam to arm result:")
@@ -101,14 +127,17 @@ def main() -> None:
     LOGGER.info(
         f"Cam to arm translation error (target std): {translation_error*1000:.3f} mm"
     )
-
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
         output_folder = f"{CONFIG['data-folder']}/arm_cal_visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
-            detected_images, camera_parameters, detected_corners, output_folder
+            detected_images,
+            corners3D,
+            camera_parameters,
+            detected_corners,
+            output_folder,
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
