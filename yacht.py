@@ -26,12 +26,8 @@ import cv2
 def main() -> None:
     # Check folder structure
     DATA_FOLDER = CONFIG["data-folder"]
-    CAM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/cam_cal"
-    ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images/arm_cal"
+    ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
     POSES_FILE = f"{DATA_FOLDER}/arm_poses_opencv.npy"
-    assert os.path.exists(
-        CAM_CAL_IMAGES_FOLDER
-    ), f"Cam cal images folder {CAM_CAL_IMAGES_FOLDER} does not exist."
     assert os.path.exists(
         ARM_CAL_IMAGES_FOLDER
     ), f"Arm cal images folder {ARM_CAL_IMAGES_FOLDER} does not exist."
@@ -48,18 +44,11 @@ def main() -> None:
         for image_fname in arm_calib_filenames
     ]
 
-    # Load images
-    cam_calib_filenames = sorted(os.listdir(CAM_CAL_IMAGES_FOLDER))
-    cam_calib_images = [
-        np.array(Image.open(f"{CAM_CAL_IMAGES_FOLDER}/{image_fname}"))
-        for image_fname in cam_calib_filenames
-    ]
-
     # Camera calibration
     LOGGER.info("Calibrating camera...")
     detected_images, detected_corners, camera_parameters, corners3D = (
         get_camera_parameters(
-            cam_calib_images,
+            arm_calib_images,
             chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
             chessboard_size=CONFIG["chessboard-size"],
         )
