@@ -14,7 +14,7 @@
 - Prepare data:
   - `your_data_folder/images/cam_cal` — camera calibration images
   - `your_data_folder/images/arm_cal` — camera to arm calibration images named like `0001.png` (order matters)
-  - `your_data_folder/poses.npy` — [N, 4, 4] numpy array of poses
+  - `your_data_folder/arm_poses_opencv.npy` — [N, 4, 4] numpy array of poses in opencv coordinate frame system (check the example data)
 - Run:
   ```
   python yacht.py
@@ -24,7 +24,7 @@
 ## Output & Checks
 - Calibration RMS error should be low — otherwise rerecord the data
   
-- Validate cam-to-arm pose and error — rerecord the data if high
+- Validate cam-to-arm pose and error — rerecord the data/check the frames if it's high
   
 - With `visualize-2D`:
   → your_data_folder/visualization/ contains calibration target frame reprojected into images
@@ -37,10 +37,7 @@
   <img src="imgs/view2.png" width="800" />
 
 ## Example dataset
-Located in `example_dataset` folder, provided by the US Department of Agriculture ([link](https://catalog.data.gov/dataset/data-from-solving-the-robot-world-hand-eyes-calibration-problem-with-iterative-methods-02035))
-
-## TODO
-- [ ] A dataset with low error
+Located in `example_dataset` folder
 
 ## Author's note
 Made by [Nikolai Goncharov](https://www.linkedin.com/in/nikolai-goncharov-2931a31a5/). There's lots of "I've got a code for calibrating arm to camera, I can share if you want". Well, I just shared mine the way I did it.
