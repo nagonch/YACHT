@@ -12,8 +12,7 @@
   - Set chessboard target size
 
 - Prepare data:
-  - `your_data_folder/images/cam_cal` — camera calibration images
-  - `your_data_folder/images/arm_cal` — camera to arm calibration images named like `0001.png` (order matters)
+  - `your_data_folder/images` — camera to arm calibration images named like `0001.png` (order matters)
   - `your_data_folder/arm_poses_opencv.npy` — [N, 4, 4] numpy array of poses in opencv coordinate frame system (check the example data)
 - Run:
   ```
