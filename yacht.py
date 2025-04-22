@@ -39,9 +39,6 @@ def main() -> None:
 
     # Load poses
     arm_poses = np.load(POSES_FILE)
-    T_change_of_basis = np.eye(4)
-    T_change_of_basis[:3, :3] = np.diag([-1, -1, 1])
-    arm_poses = T_change_of_basis @ arm_poses @ np.linalg.inv(T_change_of_basis)
     arm_to_base_translation = arm_poses[:, :3, -1]
     arm_to_base_rotation = arm_poses[:, :3, :3]
 
