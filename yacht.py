@@ -56,20 +56,6 @@ def main() -> None:
 
     LOGGER.info(f"done. RMS error: {camera_parameters.rms_error.mean()}\n")
 
-    if CONFIG["visualize-2D"]:
-        LOGGER.info("Projecting target poses to camera images...")
-        output_folder = f"{CONFIG['data-folder']}/cam_cal_visualization"
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-        viusalize_target_to_cam_poses_2D(
-            detected_images,
-            corners3D,
-            camera_parameters,
-            detected_corners,
-            output_folder,
-        )
-        LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
-
     LOGGER.info("Geting cam extrinsics...")
     camera_parameters, detected_inds, detected_images, detected_corners = (
         get_camera_extrinsics(
