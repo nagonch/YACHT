@@ -3,10 +3,6 @@ from scipy.spatial.transform import Rotation as R
 from scipy.optimize import least_squares
 from structs import HandEyeCalibrationResult
 
-# Extimate:
-# Target to base transform
-# Camera to arm transform
-
 
 def get_poses_error(lhs_poses_T, rhs_poses_T, lambd=1.0):
     trans_error = (
