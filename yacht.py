@@ -21,6 +21,7 @@ from opencv_functions import (
 )
 from handeye_cal import get_cam_to_arm
 import cv2
+import h5py
 
 
 def main() -> None:
@@ -28,6 +29,7 @@ def main() -> None:
     DATA_FOLDER = CONFIG["data-folder"]
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
     POSES_FILE = f"{DATA_FOLDER}/arm_poses_opencv.npy"
+    OUTPUT_FILE = f"{DATA_FOLDER}/result.h5"
     assert os.path.exists(
         ARM_CAL_IMAGES_FOLDER
     ), f"Arm cal images folder {ARM_CAL_IMAGES_FOLDER} does not exist."
@@ -151,7 +153,9 @@ def main() -> None:
         "camera_matrix": camera_parameters.intrinsics,
         "distortion_coefficients": camera_parameters.distortion_coeffs,
     }
-    np.save(f"{CONFIG['data-folder']}/result.npy", result)
+    with h5py.File(OUTPUT_FILE, "w") as f:
+        for key, array in result.items():
+            f.create_dataset(key, data=array)
     LOGGER.info("finished.")
 
 
