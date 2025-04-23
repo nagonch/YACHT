@@ -6,3 +6,4 @@ matplotlib
 viser
 tqdm
 opencv-python
+h5py
