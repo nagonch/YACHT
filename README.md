@@ -10,6 +10,7 @@
 - Edit `config.yaml`:
   - Set `data-folder` path
   - Set chessboard target size
+  - Choose method: `my_method` is default (code in `handeye_cal.py`). Alternatively, `park` and `tsai` are the methods from opencv (less verbose methods, harder to debug)
 
 - Prepare data:
   - `your_data_folder/images` — camera to arm calibration images named like `0001.png` (order matters)
