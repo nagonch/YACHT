@@ -62,7 +62,7 @@ def get_loss(
         * target_to_base_derived_T.shape[0]
     )
     result_loss = get_poses_error(target_to_base_derived_T, target_to_base_pred_T)
-    result_loss += lambd_reg * np.linalg.norm(cam_to_arm_pose[:3])
+    # result_loss += lambd_reg * np.linalg.norm(cam_to_arm_pose[:3])
     return result_loss
 
 
