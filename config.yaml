@@ -4,4 +4,4 @@ chessboard-height: 7
 chessboard-width: 12
 visualize-2D: true # project 2D target frames to images and save
 visualize-3D: true # plot 3D frames in viser
-method: my_method # my_method, tsai or park
+method: park # my_method, tsai or park
