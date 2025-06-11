@@ -55,5 +55,14 @@ def estimate_hand_eye_error(calib_result: HandEyeCalibrationResult) -> Tuple[NDA
     return rotation_error, translation_error
 
 
+def average_target_pose(target_to_base_rotation, target_to_base_translation):
+    avg_rotation = R.from_matrix(target_to_base_rotation).mean().as_matrix()
+    avg_translation = target_to_base_translation.mean(axis=0)
+    result_pose = np.eye(4)
+    result_pose[:3, 3] = avg_translation
+    result_pose[:3, :3] = avg_rotation
+    return result_pose
+
+
 if __name__ == "__main__":
     pass

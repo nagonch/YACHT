@@ -12,6 +12,7 @@ from utils import (
     estimate_hand_eye_error,
     CONFIG,
     LOGGER,
+    average_target_pose,
 )
 from opencv_functions import (
     get_camera_parameters,
@@ -28,7 +29,7 @@ def main() -> None:
     # Check folder structure
     DATA_FOLDER = CONFIG["data-folder"]
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
-    POSES_FILE = f"{DATA_FOLDER}/arm_poses.npy"
+    POSES_FILE = f"{DATA_FOLDER}/arm_poses_result.npy"
     OUTPUT_FILE = f"{DATA_FOLDER}/result.h5"
     assert os.path.exists(
         ARM_CAL_IMAGES_FOLDER
@@ -89,7 +90,10 @@ def main() -> None:
             arm_to_base_rotation, arm_to_base_translation, camera_parameters, method
         )
     LOGGER.info("done.")
-
+    target_pose_T = average_target_pose(
+        hand_eye_calibration_result.target_to_base_rotation,
+        hand_eye_calibration_result.target_to_base_translation,
+    )
     LOGGER.info("Cam to arm result:")
     LOGGER.info(
         pose_pretty_string(
@@ -150,6 +154,7 @@ def main() -> None:
     cam_to_arm_pose_T[:3, 3] = hand_eye_calibration_result.cam_to_arm_translation
     result = {
         "cam_to_arm_pose": cam_to_arm_pose_T,
+        "target_to_base_pose": target_pose_T,
         "camera_matrix": camera_parameters.intrinsics,
         "distortion_coefficients": camera_parameters.distortion_coeffs,
     }
