@@ -27,7 +27,7 @@ import h5py
 
 def main() -> None:
     # Check folder structure
-    DATA_FOLDER = CONFIG["data-folder"]
+    DATA_FOLDER = CONFIG["handeye-data-folder"]
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
     POSES_FILE = f"{DATA_FOLDER}/arm_poses_result.npy"
     OUTPUT_FILE = f"{DATA_FOLDER}/result.h5"
@@ -110,7 +110,7 @@ def main() -> None:
     )
     if CONFIG["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
-        output_folder = f"{CONFIG['data-folder']}/arm_cal_visualization"
+        output_folder = f"{CONFIG['handeye-data-folder']}/arm_cal_visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
@@ -148,7 +148,7 @@ def main() -> None:
         LOGGER.info("\n")
         viser_server.stop()
 
-    LOGGER.info(f"Saving result to {CONFIG['data-folder']}/result.npy...")
+    LOGGER.info(f"Saving result to {CONFIG['handeye-data-folder']}/result.npy...")
     cam_to_arm_pose_T = np.eye(4)
     cam_to_arm_pose_T[:3, :3] = hand_eye_calibration_result.cam_to_arm_rotation
     cam_to_arm_pose_T[:3, 3] = hand_eye_calibration_result.cam_to_arm_translation

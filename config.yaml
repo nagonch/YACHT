@@ -1,4 +1,4 @@
-data-folder: /home/nikolai/repos/LF_data_collection/calib_cam2arm
+handeye-data-folder: /home/nikolai/repos/LF_data_collection/calib_cam2arm
 chessboard-size: 20.0 # mm
 chessboard-height: 7
 chessboard-width: 12
