@@ -27,7 +27,7 @@ import h5py
 
 def main() -> None:
     # Check folder structure
-    DATA_FOLDER = CONFIG["handeye-data-folder"]
+    DATA_FOLDER = CONFIG["handeye"]["data-folder"]
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
     POSES_FILE = f"{DATA_FOLDER}/arm_poses_result.npy"
     OUTPUT_FILE = f"{DATA_FOLDER}/result.h5"
@@ -52,8 +52,11 @@ def main() -> None:
     detected_images, detected_corners, camera_parameters, corners3D = (
         get_camera_parameters(
             arm_calib_images,
-            chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-            chessboard_size=CONFIG["chessboard-size"],
+            chessboard_dims=(
+                CONFIG["handeye"]["chessboard-width"],
+                CONFIG["handeye"]["chessboard-height"],
+            ),
+            chessboard_size=CONFIG["handeye"]["chessboard-size"],
         )
     )
 
@@ -64,8 +67,11 @@ def main() -> None:
         get_camera_extrinsics(
             arm_calib_images,
             camera_parameters,
-            chessboard_dims=(CONFIG["chessboard-width"], CONFIG["chessboard-height"]),
-            chessboard_size=CONFIG["chessboard-size"],
+            chessboard_dims=(
+                CONFIG["handeye"]["chessboard-width"],
+                CONFIG["handeye"]["chessboard-height"],
+            ),
+            chessboard_size=CONFIG["handeye"]["chessboard-size"],
         )
     )
     detected_images = undistort_images(detected_images, camera_parameters)
@@ -76,14 +82,14 @@ def main() -> None:
 
     # Camera to arm calibration
     LOGGER.info("Calibrating hand-eye transformation... ")
-    if CONFIG["method"] == "my_method":
+    if CONFIG["handeye"]["method"] == "my_method":
         hand_eye_calibration_result = get_cam_to_arm(
             arm_to_base_rotation, arm_to_base_translation, camera_parameters
         )
     else:
         method = (
             cv2.CALIB_HAND_EYE_TSAI
-            if CONFIG["method"].lower() == "tsai"
+            if CONFIG["handeye"]["method"].lower() == "tsai"
             else cv2.CALIB_HAND_EYE_PARK
         )
         hand_eye_calibration_result = get_eye_to_hand_transformation(
@@ -108,9 +114,9 @@ def main() -> None:
     LOGGER.info(
         f"Cam to arm translation error (target std): {translation_error*1000:.3f} mm"
     )
-    if CONFIG["visualize-2D"]:
+    if CONFIG["handeye"]["visualize-2D"]:
         LOGGER.info("Projecting target poses to camera images...")
-        output_folder = f"{CONFIG['handeye-data-folder']}/arm_cal_visualization"
+        output_folder = f"{CONFIG['handeye']['data-folder']}/arm_cal_visualization"
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         viusalize_target_to_cam_poses_2D(
@@ -122,7 +128,7 @@ def main() -> None:
         )
         LOGGER.info(f"done. Images saved to folder '{output_folder}'\n")
 
-    if CONFIG["visualize-3D"]:
+    if CONFIG["handeye"]["visualize-3D"]:
         LOGGER.info("Starting viser server...")
         viser_server = create_viser_server()
         LOGGER.info("done. Click the link above to open viser. \n")
@@ -148,7 +154,7 @@ def main() -> None:
         LOGGER.info("\n")
         viser_server.stop()
 
-    LOGGER.info(f"Saving result to {CONFIG['handeye-data-folder']}/result.npy...")
+    LOGGER.info(f"Saving result to {CONFIG['handeye']['data-folder']}/result.npy...")
     cam_to_arm_pose_T = np.eye(4)
     cam_to_arm_pose_T[:3, :3] = hand_eye_calibration_result.cam_to_arm_rotation
     cam_to_arm_pose_T[:3, 3] = hand_eye_calibration_result.cam_to_arm_translation
