@@ -110,6 +110,7 @@ def get_camera_extrinsics(
     camera_parameters: CameraParameters,
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
+    return_corners_3D: bool = False,
 ):
     detected_inds, detected_corners, corners3D, detected_images = detect_corners(
         images,
@@ -138,7 +139,10 @@ def get_camera_extrinsics(
     translations = np.stack(translations)
     camera_parameters.target_to_cam_rotation = rotations
     camera_parameters.target_to_cam_translation = translations
-    return camera_parameters, detected_inds, detected_images, detected_corners
+    result = (camera_parameters, detected_inds, detected_images, detected_corners)
+    if return_corners_3D:
+        result += (corners3D,)
+    return result
 
 
 def undistort_images(detected_images, camera_parameters):
