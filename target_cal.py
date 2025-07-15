@@ -5,6 +5,38 @@ import os
 import numpy as np
 from PIL import Image
 from structs import CameraParameters
+from scipy.spatial.transform import Rotation as R
+
+
+def get_target_to_base(
+    cam_to_arm_pose, arm_to_base_rotation, arm_to_base_translation, camera_parameters
+):
+    target_to_cam_rotation = camera_parameters.target_to_cam_rotation
+    target_to_cam_translation = camera_parameters.target_to_cam_translation
+    target_to_cam_T = np.stack(
+        [np.eye(4) for _ in range(target_to_cam_translation.shape[0])]
+    )
+    target_to_cam_T[:, :3, :3] = target_to_cam_rotation
+    target_to_cam_T[:, :3, 3] = target_to_cam_translation
+
+    arm_to_base_T = np.stack(
+        [np.eye(4) for _ in range(arm_to_base_translation.shape[0])]
+    )
+    arm_to_base_T[:, :3, :3] = arm_to_base_rotation
+    arm_to_base_T[:, :3, 3] = arm_to_base_translation
+
+    target_to_arm_T = cam_to_arm_pose @ target_to_cam_T
+    target_to_base_T = np.matmul(arm_to_base_T, target_to_arm_T)  # [N, 4, 4]
+    return target_to_base_T
+
+
+def get_final_target_pose(target_to_base_T):
+    target_to_base_final_T = np.eye(4)
+    target_to_base_final_T[:3, 3] = np.mean(target_to_base_T[:, :3, 3], axis=0)
+    mean_rotation = R.from_matrix(target_to_base_T[:, :3, :3]).as_quat().mean(axis=0)
+    target_to_base_final_T[:3, :3] = R.from_quat(mean_rotation).as_matrix()
+    return target_to_base_final_T
+
 
 if __name__ == "__main__":
     HANDEYE_RESULT_FILE = CONFIG["target-cal"]["handeye-result"]
@@ -53,7 +85,15 @@ if __name__ == "__main__":
             chessboard_size=CONFIG["handeye"]["chessboard-size"],
         )
     )
-    print(
-        f"Camera parameters: {camera_parameters.target_to_cam_translation.shape}, {camera_parameters.target_to_cam_rotation.shape}"
-    )
     LOGGER.info("done.")
+    target_to_base_T = get_target_to_base(
+        cam_to_arm_pose,
+        arm_to_base_rotation[detected_inds],
+        arm_to_base_translation[detected_inds],
+        camera_parameters,
+    )
+    target_to_base_T_final = get_final_target_pose(target_to_base_T)
+    np.savetxt(
+        OUTPUT_FILE,
+        target_to_base_T_final,
+    )
