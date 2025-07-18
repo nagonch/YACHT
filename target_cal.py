@@ -1,4 +1,4 @@
-from utils import CONFIG, LOGGER
+from utils import CONFIG, LOGGER, pose_pretty_string
 from visualize import (
     viusalize_target_to_cam_poses_2D,
     viusalize_target_to_cam_poses_3D,
@@ -136,6 +136,13 @@ if __name__ == "__main__":
         camera_parameters,
     )
     target_to_base_T_final = get_final_target_pose(target_to_base_T)
+    LOGGER.info("Result:")
+    LOGGER.info(
+        pose_pretty_string(
+            target_to_base_T_final[:3, :3],
+            target_to_base_T_final[:3, 3],
+        )
+    )
     np.savetxt(
         OUTPUT_FILE,
         target_to_base_T_final,
