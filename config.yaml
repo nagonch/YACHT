@@ -1,5 +1,5 @@
 handeye:
-  data-folder: calib_target
+  data-folder: example_data
   chessboard-size: 20.0 # mm
   chessboard-height: 7
   chessboard-width: 12
