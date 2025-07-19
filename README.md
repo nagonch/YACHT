@@ -39,6 +39,6 @@
 Located in `example_dataset` folder
 
 ## Author's note
-Made by [Nikolai Goncharov](https://www.linkedin.com/in/nikolai-goncharov-2931a31a5/). There's lots of "I've got a code for calibrating arm to camera, I can share if you want". Well, I just shared mine the way I did it.
+Made by [Nikolai Goncharov](https://www.linkedin.com/in/nikolai-goncharov-2931a31a5/).
 
 <img src="imgs/yacht.jpg" width="500" />
