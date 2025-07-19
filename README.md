@@ -1,4 +1,12 @@
 # YACHT: Yet Another Camera Hand calibration Tool
+- Input data:
+  - Arm poses
+  - Camera images
+
+- Output data:
+  - Camera to arm end effector pose
+  - Camera intrinsics
+  - Target to arm base pose
 
 ## Running the script
 - ROS not required
@@ -11,21 +19,21 @@
   - Set `data-folder` path
   - Set chessboard target size
 
-- Prepare data:
+- Input data format:
   - `your_data_folder/images` — camera to arm calibration images named like `0001.png` (order matters)
   - `your_data_folder/arm_poses.npy` — [N, 4, 4] numpy array of poses
+  - 
 - Run:
   ```
   python yacht.py
   ```
-- To load your result: `np.load("your_data_folder/result.npy")`
-- To loader your result:
+- Loading output data:
 ```
 with h5py.File("your_data_folder/result.h5", "r") as f:
-    cam_to_arm_pose = f["cam_to_arm_pose"][:]
-    camera_matrix = f["camera_matrix"][:]
-    distortion_coeffs = f["distortion_coefficients"][:]
-    target_to_base_pose = f["target_to_base_pose"][:]
+    cam_to_arm_pose = f["cam_to_arm_pose"][:] # [4, 4] pose matrix
+    camera_matrix = f["camera_matrix"][:] # [3, 3] camera matrix
+    distortion_coeffs = f["distortion_coefficients"][:] # vector sized 5
+    target_to_base_pose = f["target_to_base_pose"][:] # [4, 4] pose matrix
 ```
 
 ## Output & Checks
