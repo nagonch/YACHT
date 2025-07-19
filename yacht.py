@@ -29,7 +29,7 @@ def main() -> None:
     # Check folder structure
     DATA_FOLDER = CONFIG["handeye"]["data-folder"]
     ARM_CAL_IMAGES_FOLDER = f"{DATA_FOLDER}/images"
-    POSES_FILE = f"{DATA_FOLDER}/arm_poses_result.npy"
+    POSES_FILE = f"{DATA_FOLDER}/arm_poses.npy"
     OUTPUT_FILE = f"{DATA_FOLDER}/result.h5"
     assert os.path.exists(
         ARM_CAL_IMAGES_FOLDER
