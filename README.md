@@ -19,6 +19,14 @@
   python yacht.py
   ```
 - To load your result: `np.load("your_data_folder/result.npy")`
+- To loader your result:
+```
+with h5py.File("your_data_folder/result.h5", "r") as f:
+    cam_to_arm_pose = f["cam_to_arm_pose"][:]
+    camera_matrix = f["camera_matrix"][:]
+    distortion_coeffs = f["distortion_coefficients"][:]
+    target_to_base_pose = f["target_to_base_pose"][:]
+```
 
 ## Output & Checks
 - Calibration RMS error should be low — otherwise rerecord the data
