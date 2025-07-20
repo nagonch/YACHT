@@ -42,7 +42,7 @@ with h5py.File("your_data_folder/result.h5", "r") as f:
 - Validate cam-to-arm pose and error — rerecord the data/check the frames if it's high
   
 - With `visualize-2D`:
-  → your_data_folder/visualization/ contains calibration target frame reprojected into images
+  → your_data_folder/visualization/ contains calibration target frame reprojected into images + reprojected points
 
 - With `visualize-3D`:
   - First view — camera poses w.r.t. target
