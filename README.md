@@ -1,12 +1,12 @@
 # YACHT: Yet Another Camera Hand calibration Tool
 - Input data:
-  - Arm poses
+  - Arm to world poses
   - Camera images
 
 - Output data:
   - Camera to arm end effector pose
   - Camera intrinsics
-  - Target to arm base pose
+  - Target to world pose
 
 ## Running the script
 - ROS not required
@@ -33,7 +33,7 @@ with h5py.File("your_data_folder/result.h5", "r") as f:
     cam_to_arm_pose = f["cam_to_arm_pose"][:] # [4, 4] pose matrix
     camera_matrix = f["camera_matrix"][:] # [3, 3] camera matrix
     distortion_coeffs = f["distortion_coefficients"][:] # vector sized 5
-    target_to_base_pose = f["target_to_base_pose"][:] # [4, 4] pose matrix
+    target_to_world_pose = f["target_to_base_pose"][:] # [4, 4] pose matrix
 ```
 
 ## Output & Checks
