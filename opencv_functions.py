@@ -11,11 +11,17 @@ def detect_corners(
     images: List[NDArray],
     chessboard_size: float = 28.5e-3,
     chessboard_dims: Tuple[int] = (6, 8),
+    center_corners: bool = True,
 ) -> Tuple[List[NDArray], NDArray, List[NDArray]]:
     chessboard_width, chessboard_height = chessboard_dims
     corners3D = np.zeros((chessboard_width * chessboard_height, 3), dtype=np.float32)
     corners_2D = np.meshgrid(np.arange(chessboard_width), np.arange(chessboard_height))
     corners_2D = np.stack(corners_2D, axis=-1).reshape(-1, 2)
+    if center_corners:
+        center_shift = np.array(
+            [(chessboard_width - 1) / 2, (chessboard_height - 1) / 2]
+        )
+        corners_2D = corners_2D.astype(np.float32) - center_shift
     corners3D[:, :2] = corners_2D * chessboard_size
     detected_images = []
     detected_corners = []
